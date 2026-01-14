@@ -1,0 +1,139 @@
+import csv
+import json
+import os
+import re
+import xml.etree.ElementTree as ET
+
+# https://github.com/OWASP-Benchmark/BenchmarkJava
+
+# ================= CONFIGURAÇÕES =================
+# Caminhos relativos à raiz do repositório BenchmarkJava
+PATH_CODE_DIR = os.path.join("src", "main", "java", "org", "owasp", "benchmark", "testcode")
+PATH_CSV = "expectedresults-1.2.csv"
+PATH_CWE_XML = "cwec_v4.18.xml"                     # Coloque este arquivo na raiz
+PATH_CAPEC_XML = "capec_v3.9.xml"                   # Coloque este arquivo na raiz
+OUTPUT_FILE = "dataset_treino_mestrado.jsonl"
+# =================================================
+
+def parse_mitre_definitions():
+    print("📖 Carregando definições CWE e CAPEC...")
+    cwe_map = {}
+    capec_map = {}
+    
+    # 1. Ler CWE (Para pegar Nome e Descrição)
+    try:
+        tree = ET.parse(PATH_CWE_XML)
+        root = tree.getroot()
+        ns = {'cwe': 'http://cwe.mitre.org/cwe-7'}
+        for w in root.findall('.//cwe:Weakness', ns):
+            cwe_id = f"CWE-{w.get('ID')}"
+            desc = w.find('cwe:Description', ns)
+            cwe_map[cwe_id] = {
+                "name": w.get('Name'),
+                "description": desc.text if desc is not None else ""
+            }
+    except Exception as e:
+        print(f"⚠️ Erro ao ler CWE XML: {e}")
+
+    # 2. Ler CAPEC (Para pegar a relação CWE -> CAPEC -> STRIDE implícito)
+    # Nota: Vamos criar um mapa reverso CWE->CAPEC
+    cwe_to_capec = {}
+    try:
+        tree = ET.parse(PATH_CAPEC_XML)
+        root = tree.getroot()
+        ns = {'capec': 'http://capec.mitre.org/capec-3'}
+        
+        for ap in root.findall('.//capec:Attack_Pattern', ns):
+            capec_id = f"CAPEC-{ap.get('ID')}"
+            name = ap.get('Name')
+            
+            # Tentar inferir STRIDE pelo nome do ataque
+            stride = []
+            name_lower = name.lower()
+            if "spoof" in name_lower: stride.append("Spoofing")
+            if "inject" in name_lower or "modify" in name_lower or "buffer" in name_lower: stride.append("Tampering")
+            if "log" in name_lower or "audit" in name_lower: stride.append("Repudiation")
+            if "read" in name_lower or "disclosure" in name_lower or "steal" in name_lower: stride.append("Information Disclosure")
+            if "flood" in name_lower or "dos" in name_lower: stride.append("Denial of Service")
+            if "privilege" in name_lower or "root" in name_lower: stride.append("Elevation of Privilege")
+            
+            # Relacionar com CWEs
+            rel_weak = ap.find('capec:Related_Weaknesses', ns)
+            if rel_weak is not None:
+                for rw in rel_weak.findall('capec:Related_Weakness', ns):
+                    target_cwe = f"CWE-{rw.get('CWE_ID')}"
+                    if target_cwe not in cwe_to_capec:
+                        cwe_to_capec[target_cwe] = []
+                    cwe_to_capec[target_cwe].append({
+                        "id": capec_id,
+                        "name": name,
+                        "inferred_stride": stride
+                    })
+    except Exception as e:
+        print(f"⚠️ Erro ao ler CAPEC XML: {e}")
+
+    return cwe_map, cwe_to_capec
+
+def clean_code(code):
+    # Remove licenças gigantes (comuns no Benchmark)
+    code = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
+    # Remove imports (opcional, economiza tokens)
+    code = re.sub(r'^import\s+.*;', '', code, flags=re.MULTILINE)
+    return "\n".join([line for line in code.splitlines() if line.strip()])
+
+def main():
+    cwe_db, cwe_to_capec_db = parse_mitre_definitions()
+    
+    print(f"🚀 Iniciando processamento do Benchmark em: {PATH_CODE_DIR}")
+    dataset = []
+    
+    with open(PATH_CSV, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # CSV Columns: test name, category, real vulnerability, cwe
+            filename = row['# test name'] + ".java"
+            cwe_key = f"CWE-{row[' cwe']}"
+            is_vuln = row[' real vulnerability'].lower() == 'true'
+            
+            # Ler arquivo Java
+            filepath = os.path.join(PATH_CODE_DIR, filename)
+            if os.path.exists(filepath):
+                with open(filepath, 'r', encoding='utf-8', errors='ignore') as jf:
+                    raw_code = jf.read()
+                
+                # Montar Metadados Ricos
+                cwe_info = cwe_db.get(cwe_key, {"name": "Unknown", "description": ""})
+                threat_info = cwe_to_capec_db.get(cwe_key, [])
+                
+                # Coletar todos os STRIDEs possíveis para essa vulnerabilidade
+                all_strides = set()
+                for t in threat_info:
+                    all_strides.update(t['inferred_stride'])
+                
+                entry = {
+                    "instruction": f"Analyze the provided Java code snippet. Detect if it contains a Security Debt item (Vulnerability). If vulnerable, identify the CWE and potential CAPEC attack patterns.",
+                    "input": clean_code(raw_code),
+                    "output": json.dumps({
+                        "verdict": "VULNERABLE" if is_vuln else "SAFE",
+                        "weakness": {
+                            "id": cwe_key,
+                            "name": cwe_info['name'],
+                            "description": cwe_info['description']
+                        },
+                        "threat_model": {
+                            "related_capecs": [t['id'] for t in threat_info[:3]], # Limitando a 3 para não estourar contexto
+                            "stride_categories": list(all_strides) if all_strides else ["Unknown"]
+                        }
+                    })
+                }
+                dataset.append(entry)
+
+    # Salvar
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as out:
+        for item in dataset:
+            out.write(json.dumps(item) + "\n")
+            
+    print(f"✅ Concluído! {len(dataset)} exemplos salvos em {OUTPUT_FILE}")
+
+if __name__ == "__main__":
+    main()
