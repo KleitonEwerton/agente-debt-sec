@@ -30,7 +30,7 @@ CÓDIGO ALVO PARA ANÁLISE:
 
 Instruções de Resposta:
 1. Identifique se o código é VULNERABLE ou SAFE.
-2. Se vulnerável, especifique o CWE ID mais provável.
+2. Se vulnerável, especifique o CWE ID mais provável esclusivamente dentre esses CWE (22, 78, 79, 89, 90, 327, 328, 330, 501, 614 ou 643);
 3. Explique brevemente a falha e associe ao conceito de Dívida de Segurança.
 4. Se possível, infira a categoria STRIDE baseada no tipo de falha.
 
