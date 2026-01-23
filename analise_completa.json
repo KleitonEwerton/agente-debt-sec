@@ -1,0 +1,198 @@
+{
+  "metricas_gerais": {
+    "acuracia": 0.5064935064935064,
+    "precisao": 0.5064935064935064,
+    "recall": 1.0,
+    "f1_score": 0.6724137931034482,
+    "total_testes": 231,
+    "total_erros": 0
+  },
+  "metricas_por_cwe": {
+    "CWE-328": {
+      "total_casos": 12,
+      "acertos": 0,
+      "precisao": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "acuracia": 0.0,
+      "TP": 0,
+      "FP": 12,
+      "FN": 0
+    },
+    "CWE-327": {
+      "total_casos": 7,
+      "acertos": 7,
+      "precisao": 0.4117647058823529,
+      "recall": 1.0,
+      "f1_score": 0.5833333333333334,
+      "acuracia": 1.0,
+      "TP": 7,
+      "FP": 10,
+      "FN": 0
+    },
+    "CWE-89": {
+      "total_casos": 25,
+      "acertos": 25,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 25,
+      "FP": 0,
+      "FN": 0
+    },
+    "CWE-79": {
+      "total_casos": 26,
+      "acertos": 26,
+      "precisao": 0.7027027027027027,
+      "recall": 1.0,
+      "f1_score": 0.8253968253968255,
+      "acuracia": 1.0,
+      "TP": 26,
+      "FP": 11,
+      "FN": 0
+    },
+    "CWE-330": {
+      "total_casos": 15,
+      "acertos": 15,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 15,
+      "FP": 0,
+      "FN": 0
+    },
+    "CWE-78": {
+      "total_casos": 7,
+      "acertos": 7,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 7,
+      "FP": 0,
+      "FN": 0
+    },
+    "CWE-22": {
+      "total_casos": 11,
+      "acertos": 11,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 11,
+      "FP": 0,
+      "FN": 0
+    },
+    "CWE-90": {
+      "total_casos": 4,
+      "acertos": 4,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 4,
+      "FP": 0,
+      "FN": 0
+    },
+    "CWE-501": {
+      "total_casos": 7,
+      "acertos": 0,
+      "precisao": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "acuracia": 0.0,
+      "TP": 0,
+      "FP": 7,
+      "FN": 0
+    },
+    "CWE-614": {
+      "total_casos": 2,
+      "acertos": 0,
+      "precisao": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "acuracia": 0.0,
+      "TP": 0,
+      "FP": 2,
+      "FN": 0
+    },
+    "CWE-643": {
+      "total_casos": 1,
+      "acertos": 1,
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "acuracia": 1.0,
+      "TP": 1,
+      "FP": 0,
+      "FN": 0
+    }
+  },
+  "distribuicao_dataset": {
+    "CWE-79": {
+      "count": 65,
+      "percentual": 22.807017543859647
+    },
+    "CWE-89": {
+      "count": 58,
+      "percentual": 20.350877192982455
+    },
+    "CWE-330": {
+      "count": 37,
+      "percentual": 12.982456140350877
+    },
+    "CWE-327": {
+      "count": 24,
+      "percentual": 8.421052631578947
+    },
+    "CWE-328": {
+      "count": 23,
+      "percentual": 8.070175438596491
+    },
+    "CWE-78": {
+      "count": 22,
+      "percentual": 7.719298245614035
+    },
+    "CWE-22": {
+      "count": 21,
+      "percentual": 7.368421052631578
+    },
+    "CWE-501": {
+      "count": 20,
+      "percentual": 7.017543859649122
+    },
+    "CWE-90": {
+      "count": 6,
+      "percentual": 2.1052631578947367
+    },
+    "CWE-614": {
+      "count": 6,
+      "percentual": 2.1052631578947367
+    },
+    "CWE-643": {
+      "count": 3,
+      "percentual": 1.0526315789473684
+    }
+  },
+  "categorias_desempenho": {
+    "alto": [
+      "CWE-89",
+      "CWE-330",
+      "CWE-78",
+      "CWE-22",
+      "CWE-90",
+      "CWE-643",
+      "CWE-79"
+    ],
+    "medio": [
+      "CWE-327"
+    ],
+    "baixo": [
+      "CWE-328",
+      "CWE-501",
+      "CWE-614"
+    ]
+  }
+}
