@@ -15,9 +15,13 @@ CAMINHO_DB = "vectorstore_db"
 MODELO_EMBEDDING = "sentence-transformers/all-MiniLM-L6-v2"
 ARQUIVO_TESTE = "dataset_teste_reservado.jsonl"
 ARQUIVO_RESULTADOS = "resultados_teste.json"
+# Rate Limiting baseado nos limites do Groq (llama-3.3-70b-versatile):
+# RPM: 30, TPM: 12K
+# Pausa de 2s entre requisições (mínimo para RPM=30: 60/30=2s)
+# Lote de 5 requisições com pausa de 15s (~12 req/min, abaixo do limite)
 PAUSA_ENTRE_REQUISICOES = 2  # segundos
-REQUISICOES_POR_LOTE = 10  # Pausa maior a cada lote
-PAUSA_LOTE = 10  # segundos
+REQUISICOES_POR_LOTE = 5  # Pausa maior a cada lote
+PAUSA_LOTE = 15  # segundos
 
 # Configurar logging
 logging.basicConfig(filename='teste_log.log', level=logging.INFO,
@@ -109,7 +113,7 @@ def testar_dataset():
 
         try:
             # Buscar contexto similar
-            resultados_similares = db.similarity_search(codigo_input, k=3)
+            resultados_similares = db.similarity_search(codigo_input, k=1)
             contexto_str = ""
             for doc in resultados_similares:
                 contexto_str += f"\n---\nExemplo Similar:\n{doc.page_content[:500]}...\n"
@@ -119,6 +123,16 @@ def testar_dataset():
                 "codigo_alvo": codigo_input,
                 "base_conhecimento": contexto_str
             })
+
+            # Logar headers de rate limit se disponíveis
+            if hasattr(resposta, 'response_metadata') and 'headers' in resposta.response_metadata:
+                headers = resposta.response_metadata['headers']
+                remaining_requests = headers.get('x-ratelimit-remaining-requests', 'N/A')
+                remaining_tokens = headers.get('x-ratelimit-remaining-tokens', 'N/A')
+                logging.info(f"Teste {idx+1} - Rate Limit: Remaining Requests: {remaining_requests}, Remaining Tokens: {remaining_tokens}")
+                print(f"📊 Rate Limit: Req restantes: {remaining_requests}, Tokens restantes: {remaining_tokens}")
+            else:
+                logging.warning(f"Teste {idx+1} - Headers de rate limit não disponíveis na resposta.")
 
             # Parsear resposta JSON
             try:

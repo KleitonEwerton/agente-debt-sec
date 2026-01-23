@@ -34,6 +34,20 @@ Instruções de Resposta:
 3. Explique brevemente a falha e associe ao conceito de Dívida de Segurança.
 4. Se possível, infira a categoria STRIDE baseada no tipo de falha.
 
+IMPORTANTE: Distinga claramente entre os CWE:
+- CWE-327 e CWE-328 são sobre algoritmos criptográficos fracos ou inseguros (ex: MD5, SHA1, DES, AES com chaves fracas).
+- CWE-89 é sobre injeção SQL (SQL Injection), onde entrada não sanitizada é usada em queries SQL.
+- CWE-79 é sobre Cross-Site Scripting (XSS), onde entrada não sanitizada é refletida em HTML.
+- CWE-78 é sobre injeção de comandos do sistema operacional (OS Command Injection).
+- CWE-22 é sobre Path Traversal.
+- CWE-90 é sobre LDAP Injection.
+- CWE-330 é sobre valores insuficientemente aleatórios.
+- CWE-501 é sobre confiança em entrada não confiável.
+- CWE-614 é sobre transporte inseguro de credenciais.
+- CWE-643 é sobre XPath Injection.
+
+Não confunda criptografia fraca (CWE-327/328) com SQL Injection (CWE-89), mesmo se o código usar hash para senhas.
+
 Responda estritamente no formato JSON:
 {{
   "verdict": "VULNERABLE" | "SAFE",
@@ -72,7 +86,7 @@ def auditoria_interativa():
 
         print("🔍 Buscando casos similares na base de conhecimento...")
         # Recupera exemplos similares (Few-Shot Learning via RAG)
-        resultados = db.similarity_search(codigo_input, k=3)
+        resultados = db.similarity_search(codigo_input, k=1)
         
         contexto_str = ""
         for doc in resultados:
