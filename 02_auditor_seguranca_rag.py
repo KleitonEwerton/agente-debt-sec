@@ -13,46 +13,46 @@ load_dotenv()
 CAMINHO_DB = "vectorstore_db"
 MODELO_EMBEDDING = "sentence-transformers/all-MiniLM-L6-v2"
 
-# Prompt Especializado para Mestrado
+# Specialized Security Audit Prompt
 prompt_template_security = """
-Você é um Especialista em Segurança de Software e Análise Estática (SAST).
-Sua tarefa é analisar o código Java fornecido em busca de Dívida de Segurança Técnica.
+You are a Software Security and Static Analysis (SAST) Expert.
+Your task is to analyze the provided Java code for Technical Security Debt.
 
-Use o contexto recuperado (exemplos similares do dataset) para guiar sua decisão.
+Use the retrieved context (similar examples from the dataset) to guide your decision.
 
-CONTEXTO RECUPERADO (Casos similares conhecidos):
+RETRIEVED CONTEXT (Known similar cases):
 {base_conhecimento}
 
 ---
-CÓDIGO ALVO PARA ANÁLISE:
+TARGET CODE FOR ANALYSIS:
 {codigo_alvo}
 ---
 
-Instruções de Resposta:
-1. Identifique se o código é VULNERABLE ou SAFE.
-2. Se vulnerável, especifique o CWE ID mais provável esclusivamente dentre esses CWE (22, 78, 79, 89, 90, 327, 328, 330, 501, 614 ou 643);
-3. Explique brevemente a falha e associe ao conceito de Dívida de Segurança.
-4. Se possível, infira a categoria STRIDE baseada no tipo de falha.
+Response Instructions:
+1. Identify if the code is VULNERABLE or SAFE.
+2. If vulnerable, specify the most likely CWE ID exclusively from these CWEs (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643);
+3. Briefly explain the flaw and associate it with the concept of Security Debt.
+4. If possible, infer the STRIDE category based on the type of flaw.
 
-IMPORTANTE: Distinga claramente entre os CWE:
-- CWE-327 e CWE-328 são sobre algoritmos criptográficos fracos ou inseguros (ex: MD5, SHA1, DES, AES com chaves fracas).
-- CWE-89 é sobre injeção SQL (SQL Injection), onde entrada não sanitizada é usada em queries SQL.
-- CWE-79 é sobre Cross-Site Scripting (XSS), onde entrada não sanitizada é refletida em HTML.
-- CWE-78 é sobre injeção de comandos do sistema operacional (OS Command Injection).
-- CWE-22 é sobre Path Traversal.
-- CWE-90 é sobre LDAP Injection.
-- CWE-330 é sobre valores insuficientemente aleatórios.
-- CWE-501 é sobre confiança em entrada não confiável.
-- CWE-614 é sobre transporte inseguro de credenciais.
-- CWE-643 é sobre XPath Injection.
+IMPORTANT: Clearly distinguish between the CWEs:
+- CWE-327 and CWE-328 are about weak or insecure cryptographic algorithms (e.g., MD5, SHA1, DES, AES with weak keys).
+- CWE-89 is about SQL Injection, where unsanitized input is used in SQL queries.
+- CWE-79 is about Cross-Site Scripting (XSS), where unsanitized input is reflected in HTML.
+- CWE-78 is about OS Command Injection.
+- CWE-22 is about Path Traversal.
+- CWE-90 is about LDAP Injection.
+- CWE-330 is about insufficiently random values.
+- CWE-501 is about trust of untrusted input.
+- CWE-614 is about insecure transport of credentials.
+- CWE-643 is about XPath Injection.
 
-Não confunda criptografia fraca (CWE-327/328) com SQL Injection (CWE-89), mesmo se o código usar hash para senhas.
+Do not confuse weak cryptography (CWE-327/328) with SQL Injection (CWE-89), even if the code uses hashing for passwords.
 
-Responda estritamente no formato JSON:
+Respond strictly in JSON format:
 {{
   "verdict": "VULNERABLE" | "SAFE",
   "cwe_id": "CWE-XXX" | "None",
-  "explanation": "Texto explicativo...",
+  "explanation": "Explanatory text...",
   "stride": "Category"
 }}
 """
