@@ -1,198 +1,311 @@
 {
-  "metricas_gerais": {
-    "acuracia": 0.5064935064935064,
-    "precisao": 0.5064935064935064,
-    "recall": 1.0,
-    "f1_score": 0.6724137931034482,
-    "total_testes": 231,
-    "total_erros": 0
-  },
-  "metricas_por_cwe": {
-    "CWE-328": {
-      "total_casos": 12,
-      "acertos": 0,
-      "precisao": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "acuracia": 0.0,
-      "TP": 0,
-      "FP": 12,
-      "FN": 0
-    },
-    "CWE-327": {
-      "total_casos": 7,
-      "acertos": 7,
-      "precisao": 0.4117647058823529,
-      "recall": 1.0,
-      "f1_score": 0.5833333333333334,
-      "acuracia": 1.0,
-      "TP": 7,
-      "FP": 10,
-      "FN": 0
-    },
-    "CWE-89": {
-      "total_casos": 25,
-      "acertos": 25,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 25,
-      "FP": 0,
-      "FN": 0
-    },
-    "CWE-79": {
-      "total_casos": 26,
-      "acertos": 26,
-      "precisao": 0.7027027027027027,
-      "recall": 1.0,
-      "f1_score": 0.8253968253968255,
-      "acuracia": 1.0,
-      "TP": 26,
-      "FP": 11,
-      "FN": 0
-    },
-    "CWE-330": {
-      "total_casos": 15,
-      "acertos": 15,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 15,
-      "FP": 0,
-      "FN": 0
-    },
-    "CWE-78": {
-      "total_casos": 7,
-      "acertos": 7,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 7,
-      "FP": 0,
-      "FN": 0
-    },
-    "CWE-22": {
-      "total_casos": 11,
-      "acertos": 11,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 11,
-      "FP": 0,
-      "FN": 0
-    },
-    "CWE-90": {
-      "total_casos": 4,
-      "acertos": 4,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 4,
-      "FP": 0,
-      "FN": 0
-    },
-    "CWE-501": {
-      "total_casos": 7,
-      "acertos": 0,
-      "precisao": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "acuracia": 0.0,
-      "TP": 0,
-      "FP": 7,
-      "FN": 0
-    },
-    "CWE-614": {
-      "total_casos": 2,
-      "acertos": 0,
-      "precisao": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "acuracia": 0.0,
-      "TP": 0,
-      "FP": 2,
-      "FN": 0
-    },
-    "CWE-643": {
-      "total_casos": 1,
-      "acertos": 1,
-      "precisao": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "acuracia": 1.0,
-      "TP": 1,
-      "FP": 0,
-      "FN": 0
-    }
-  },
   "distribuicao_dataset": {
-    "CWE-79": {
-      "count": 65,
-      "percentual": 22.807017543859647
+    "CWE-328": 23,
+    "CWE-89": 58,
+    "CWE-79": 65,
+    "CWE-327": 24,
+    "CWE-78": 22,
+    "CWE-22": 21,
+    "CWE-90": 6,
+    "CWE-614": 6,
+    "CWE-330": 37,
+    "CWE-501": 20,
+    "CWE-643": 3
+  },
+  "total_testes": 548,
+  "total_erros": 0,
+  "analise_1_reconhecimento_cwe": {
+    "metricas_por_cwe": {
+      "CWE-328": {
+        "acertos": 1,
+        "total": 23,
+        "acuracia": 4.3478260869565215
+      },
+      "CWE-327": {
+        "acertos": 24,
+        "total": 24,
+        "acuracia": 100.0
+      },
+      "CWE-89": {
+        "acertos": 58,
+        "total": 58,
+        "acuracia": 100.0
+      },
+      "CWE-79": {
+        "acertos": 65,
+        "total": 65,
+        "acuracia": 100.0
+      },
+      "CWE-330": {
+        "acertos": 37,
+        "total": 37,
+        "acuracia": 100.0
+      },
+      "CWE-78": {
+        "acertos": 22,
+        "total": 22,
+        "acuracia": 100.0
+      },
+      "CWE-22": {
+        "acertos": 21,
+        "total": 21,
+        "acuracia": 100.0
+      },
+      "CWE-90": {
+        "acertos": 6,
+        "total": 6,
+        "acuracia": 100.0
+      },
+      "CWE-501": {
+        "acertos": 3,
+        "total": 20,
+        "acuracia": 15.0
+      },
+      "CWE-614": {
+        "acertos": 0,
+        "total": 6,
+        "acuracia": 0.0
+      },
+      "CWE-643": {
+        "acertos": 3,
+        "total": 3,
+        "acuracia": 100.0
+      }
     },
-    "CWE-89": {
-      "count": 58,
-      "percentual": 20.350877192982455
+    "acuracia_geral": 84.21052631578947,
+    "total_acertos": 240,
+    "total_casos": 285
+  },
+  "analise_2_verdict_isolado": {
+    "metricas": {
+      "precision": 52.00729927007299,
+      "recall": 100.0,
+      "f1_score": 68.42737094837935,
+      "accuracy": 52.00729927007299,
+      "TP": 285,
+      "FP": 263,
+      "FN": 0,
+      "TN": 0
     },
-    "CWE-330": {
-      "count": 37,
-      "percentual": 12.982456140350877
-    },
-    "CWE-327": {
-      "count": 24,
-      "percentual": 8.421052631578947
-    },
-    "CWE-328": {
-      "count": 23,
-      "percentual": 8.070175438596491
-    },
-    "CWE-78": {
-      "count": 22,
-      "percentual": 7.719298245614035
-    },
-    "CWE-22": {
-      "count": 21,
-      "percentual": 7.368421052631578
-    },
-    "CWE-501": {
-      "count": 20,
-      "percentual": 7.017543859649122
-    },
-    "CWE-90": {
-      "count": 6,
-      "percentual": 2.1052631578947367
-    },
-    "CWE-614": {
-      "count": 6,
-      "percentual": 2.1052631578947367
-    },
-    "CWE-643": {
-      "count": 3,
-      "percentual": 1.0526315789473684
+    "matriz_confusao": {
+      "TP": 285,
+      "FP": 263,
+      "FN": 0,
+      "TN": 0
     }
   },
-  "categorias_desempenho": {
-    "alto": [
-      "CWE-89",
-      "CWE-330",
-      "CWE-78",
-      "CWE-22",
-      "CWE-90",
-      "CWE-643",
-      "CWE-79"
-    ],
-    "medio": [
-      "CWE-327"
-    ],
-    "baixo": [
-      "CWE-328",
-      "CWE-501",
-      "CWE-614"
-    ]
+  "analise_3_cwe_verdict_combinado": {
+    "metricas_por_cwe": {
+      "CWE-328": {
+        "precision": 4.3478260869565215,
+        "recall": 100.0,
+        "f1_score": 8.333333333333332,
+        "accuracy": 4.3478260869565215,
+        "TP": 1,
+        "FP": 22,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 23,
+        "total_pred": 17,
+        "acertos": 1
+      },
+      "CWE-327": {
+        "precision": 57.14285714285714,
+        "recall": 100.0,
+        "f1_score": 72.72727272727272,
+        "accuracy": 57.14285714285714,
+        "TP": 24,
+        "FP": 18,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 24,
+        "total_pred": 45,
+        "acertos": 24
+      },
+      "CWE-89": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 58,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 58,
+        "total_pred": 112,
+        "acertos": 58
+      },
+      "CWE-79": {
+        "precision": 70.65217391304348,
+        "recall": 100.0,
+        "f1_score": 82.80254777070063,
+        "accuracy": 70.65217391304348,
+        "TP": 65,
+        "FP": 27,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 65,
+        "total_pred": 171,
+        "acertos": 65
+      },
+      "CWE-330": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 37,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 37,
+        "total_pred": 98,
+        "acertos": 37
+      },
+      "CWE-78": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 22,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 22,
+        "total_pred": 40,
+        "acertos": 22
+      },
+      "CWE-22": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 21,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 21,
+        "total_pred": 42,
+        "acertos": 21
+      },
+      "CWE-90": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 6,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 6,
+        "total_pred": 12,
+        "acertos": 6
+      },
+      "CWE-501": {
+        "precision": 15.0,
+        "recall": 100.0,
+        "f1_score": 26.08695652173913,
+        "accuracy": 15.0,
+        "TP": 3,
+        "FP": 17,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 20,
+        "total_pred": 7,
+        "acertos": 3
+      },
+      "CWE-614": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.0,
+        "TP": 0,
+        "FP": 6,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 6,
+        "total_pred": 0,
+        "acertos": 0
+      },
+      "CWE-643": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1_score": 100.0,
+        "accuracy": 100.0,
+        "TP": 3,
+        "FP": 0,
+        "FN": 0,
+        "TN": 0,
+        "total_gt": 3,
+        "total_pred": 4,
+        "acertos": 3
+      }
+    },
+    "metricas_gerais": {
+      "precision": 72.72727272727273,
+      "recall": 100.0,
+      "f1_score": 84.21052631578947,
+      "accuracy": 72.72727272727273,
+      "TP": 240,
+      "FP": 90,
+      "FN": 0,
+      "TN": 0
+    },
+    "categorias_desempenho": {
+      "alto": [
+        "CWE-89",
+        "CWE-330",
+        "CWE-78",
+        "CWE-22",
+        "CWE-90",
+        "CWE-643",
+        "CWE-79"
+      ],
+      "medio": [
+        "CWE-327"
+      ],
+      "baixo": [
+        "CWE-501",
+        "CWE-328",
+        "CWE-614"
+      ]
+    }
+  },
+  "analise_4_stride": {
+    "metricas_por_categoria": {
+      "Tampering": {
+        "corretos": 81,
+        "total": 86,
+        "acuracia": 94.18604651162791
+      },
+      "Spoofing": {
+        "corretos": 0,
+        "total": 61,
+        "acuracia": 0.0
+      },
+      "Repudiation": {
+        "corretos": 0,
+        "total": 21,
+        "acuracia": 0.0
+      }
+    },
+    "acuracia_geral": 48.214285714285715,
+    "total_acertos": 81,
+    "total_casos": 168,
+    "matriz_confusao": {
+      "Tampering": {
+        "Tampering": 81,
+        "Elevation of Privilege": 5
+      },
+      "Spoofing": {
+        "Confidentiality": 2,
+        "Tampering": 59
+      },
+      "Repudiation": {
+        "Tampering": 19,
+        "Elevation of Privilege": 2
+      },
+      "Confidentiality": {},
+      "Elevation of Privilege": {}
+    }
   }
 }

@@ -68,6 +68,36 @@ def extrair_verdict_do_llm(resultado_llm: dict) -> str:
     
     return resultado_llm.get('verdict', 'Unknown')
 
+def extrair_stride_do_ground_truth(ground_truth_str: str) -> str:
+    """Extrai o STRIDE do ground truth"""
+    try:
+        gt_data = json.loads(ground_truth_str)
+        stride_list = gt_data.get('threat_model', {}).get('stride_categories', [])
+        return stride_list[0] if stride_list else 'Unknown'
+    except (json.JSONDecodeError, AttributeError, IndexError):
+        return 'Unknown'
+
+def extrair_stride_do_llm(resultado_llm: dict) -> str:
+    """Extrai o STRIDE da resposta do LLM"""
+    # Se tem erro mas tem raw_response, tenta extrair JSON de dentro de markdown
+    if 'error' in resultado_llm and 'raw_response' in resultado_llm:
+        try:
+            raw = resultado_llm['raw_response']
+            if '```json' in raw:
+                raw = raw.split('```json')[1].split('```')[0].strip()
+            elif '```' in raw:
+                raw = raw.split('```')[1].split('```')[0].strip()
+            
+            parsed = json.loads(raw)
+            return parsed.get('stride', 'Unknown')
+        except:
+            return 'Unknown'
+    
+    if 'error' in resultado_llm and 'raw_response' not in resultado_llm:
+        return 'Unknown'
+    
+    return resultado_llm.get('stride', 'Unknown')
+
 def calcular_metricas_por_cwe(resultados: List[dict]) -> Dict:
     """Calcula métricas detalhadas para cada CWE"""
     
@@ -79,13 +109,18 @@ def calcular_metricas_por_cwe(resultados: List[dict]) -> Dict:
         'TN': 0,  # True Negative: previu safe E é safe
         'total_gt': 0,  # Total de casos com esse CWE no ground truth
         'total_pred': 0,  # Total de casos previstos como esse CWE
-        'acertos': 0,  # Acertos exatos (CWE correto)
+        'acertos': 0,  # Acertos exatos (CWE correto + Verdict correto)
+        'acertos_cwe_isolado': 0,  # Acertos de CWE independente do verdict
     })
     
     # Métricas gerais de VERDICT (VULNERABLE vs SAFE)
     metricas_verdict = {
         'TP': 0, 'FP': 0, 'FN': 0, 'TN': 0
     }
+    
+    # Métricas de STRIDE
+    metricas_stride = defaultdict(lambda: {'corretos': 0, 'total': 0})
+    matriz_confusao_stride = defaultdict(lambda: defaultdict(int))
     
     total_testes = 0
     total_erros = 0
@@ -116,6 +151,8 @@ def calcular_metricas_por_cwe(resultados: List[dict]) -> Dict:
         cwe_pred = extrair_cwe_do_llm(resultado_llm)
         verdict_gt = extrair_verdict_do_ground_truth(ground_truth_str)
         verdict_pred = extrair_verdict_do_llm(resultado_llm)
+        stride_gt = extrair_stride_do_ground_truth(ground_truth_str)
+        stride_pred = extrair_stride_do_llm(resultado_llm)
         
         if cwe_gt == 'Unknown' or verdict_gt == 'Unknown':
             continue
@@ -134,6 +171,10 @@ def calcular_metricas_por_cwe(resultados: List[dict]) -> Dict:
         if verdict_gt == 'VULNERABLE':
             metricas_cwe[cwe_gt]['total_gt'] += 1
             
+            # Acerto de CWE ISOLADO (independente do verdict)
+            if cwe_pred == cwe_gt:
+                metricas_cwe[cwe_gt]['acertos_cwe_isolado'] += 1
+            
             if verdict_pred == 'VULNERABLE':
                 if cwe_pred == cwe_gt:
                     metricas_cwe[cwe_gt]['TP'] += 1
@@ -149,259 +190,342 @@ def calcular_metricas_por_cwe(resultados: List[dict]) -> Dict:
         # Contar predições por CWE
         if verdict_pred == 'VULNERABLE' and cwe_pred != 'None':
             metricas_cwe[cwe_pred]['total_pred'] += 1
+        
+        # Métricas de STRIDE
+        if verdict_gt == 'VULNERABLE' and stride_gt != 'Unknown':
+            metricas_stride[stride_gt]['total'] += 1
+            matriz_confusao_stride[stride_gt][stride_pred] += 1
+            
+            if stride_gt == stride_pred:
+                metricas_stride[stride_gt]['corretos'] += 1
     
-    return metricas_cwe, metricas_verdict, total_testes, total_erros
+    return metricas_cwe, metricas_verdict, metricas_stride, matriz_confusao_stride, total_testes, total_erros
 
-def calcular_metricas_finais(metricas_cwe: Dict) -> Dict:
-    """Calcula precisão, recall, F1 para cada CWE"""
-    resultados = {}
+def calcular_metricas_finais(tp: int, fp: int, fn: int, tn: int) -> Dict:
+    """Calcula precisão, recall, F1 dados TP, FP, FN, TN"""
     
-    for cwe, metrics in metricas_cwe.items():
-        tp = metrics['TP']
-        fp = metrics['FP']
-        fn = metrics['FN']
-        total_gt = metrics['total_gt']
-        acertos = metrics['acertos']
+    # Precisão: dos que previu como positivo, quantos realmente são?
+    precision = (tp / (tp + fp) * 100) if (tp + fp) > 0 else 0.0
+    
+    # Recall: dos positivos reais, quantos identificou?
+    recall = (tp / (tp + fn) * 100) if (tp + fn) > 0 else 0.0
+    
+    # F1-Score: média harmônica
+    f1_score = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+    
+    # Acurácia: total de acertos / total de casos
+    accuracy = ((tp + tn) / (tp + fp + fn + tn) * 100) if (tp + fp + fn + tn) > 0 else 0.0
+    
+    return {
+        'precision': precision,
+        'recall': recall,
+        'f1_score': f1_score,
+        'accuracy': accuracy,
+        'TP': tp,
+        'FP': fp,
+        'FN': fn,
+        'TN': tn
+    }
+
+def analisar_distribuicao_dataset(resultados: List[dict]) -> Dict:
+    """Analisa a distribuição de CWEs no dataset"""
+    distribuicao = Counter()
+    
+    for item in resultados:
+        ground_truth_str = item.get('ground_truth', '{}')
+        try:
+            gt_data = json.loads(ground_truth_str)
+            verdict = gt_data.get('verdict', 'Unknown')
+            
+            if verdict == 'VULNERABLE':
+                cwe = gt_data.get('weakness', {}).get('id', 'Unknown')
+                distribuicao[cwe] += 1
+        except:
+            continue
+    
+    return dict(distribuicao)
+
+def carregar_resultados(arquivo: str) -> List[dict]:
+    """Carrega resultados dos testes"""
+    with open(arquivo, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def gerar_relatorio(arquivo_resultados: str = 'resultados_teste.json'):
+    """Gera relatório completo com todas as análises"""
+    
+    print("=" * 80)
+    print("RELATÓRIO COMPLETO DE ANÁLISE DE RESULTADOS")
+    print("=" * 80)
+    
+    # Carregar resultados
+    print("\n1. Carregando resultados...")
+    resultados = carregar_resultados(arquivo_resultados)
+    print(f"   ✓ {len(resultados)} testes carregados")
+    
+    # Análise de distribuição do dataset
+    print("\n2. Analisando distribuição do dataset...")
+    distribuicao = analisar_distribuicao_dataset(resultados)
+    
+    # Calcular métricas completas
+    print("\n3. Calculando métricas...")
+    metricas_cwe, metricas_verdict, metricas_stride, matriz_confusao_stride, total_testes, total_erros = calcular_metricas_por_cwe(resultados)
+    
+    metricas_finais = {}
+    metricas_cwe_isolado = {}
+    
+    # Calcular métricas finais para cada CWE
+    for cwe, valores in metricas_cwe.items():
+        metricas_finais[cwe] = calcular_metricas_finais(
+            valores['TP'], 
+            valores['FP'], 
+            valores['FN'], 
+            valores['TN']
+        )
+        metricas_finais[cwe]['total_gt'] = valores['total_gt']
+        metricas_finais[cwe]['total_pred'] = valores['total_pred']
+        metricas_finais[cwe]['acertos'] = valores['acertos']
         
-        # Precisão: dos que eu disse que são esse CWE, quantos realmente são?
-        precisao = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        # Métricas de CWE isolado (reconhecimento independente do verdict)
+        if valores['total_gt'] > 0:
+            acuracia_cwe = (valores['acertos_cwe_isolado'] / valores['total_gt']) * 100
+        else:
+            acuracia_cwe = 0
         
-        # Recall: dos casos reais desse CWE, quantos eu identifiquei?
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        
-        # F1-Score: média harmônica
-        f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0.0
-        
-        # Acurácia específica para esse CWE (acertos / total de casos desse CWE)
-        acuracia = acertos / total_gt if total_gt > 0 else 0.0
-        
-        resultados[cwe] = {
-            'total_casos': total_gt,
-            'acertos': acertos,
-            'precisao': precisao,
-            'recall': recall,
-            'f1_score': f1,
-            'acuracia': acuracia,
-            'TP': tp,
-            'FP': fp,
-            'FN': fn,
+        metricas_cwe_isolado[cwe] = {
+            'acertos': valores['acertos_cwe_isolado'],
+            'total': valores['total_gt'],
+            'acuracia': acuracia_cwe
         }
     
-    return resultados
-
-def analisar_distribuicao_dataset():
-    """Analisa a distribuição de CWEs no dataset de teste"""
-    print("\n" + "="*80)
-    print("📊 ANÁLISE DE DISTRIBUIÇÃO DO DATASET DE TESTE")
-    print("="*80)
+    # Calcular métricas de VERDICT isolado
+    metricas_verdict_finais = calcular_metricas_finais(
+        metricas_verdict['TP'],
+        metricas_verdict['FP'],
+        metricas_verdict['FN'],
+        metricas_verdict['TN']
+    )
     
-    if not os.path.exists(ARQUIVO_DATASET_TESTE):
-        print(f"❌ Arquivo {ARQUIVO_DATASET_TESTE} não encontrado.")
-        return {}
+    # Calcular métricas de STRIDE
+    metricas_stride_finais = {}
+    for stride, valores in metricas_stride.items():
+        if valores['total'] > 0:
+            acuracia = (valores['corretos'] / valores['total']) * 100
+        else:
+            acuracia = 0
+        
+        metricas_stride_finais[stride] = {
+            'corretos': valores['corretos'],
+            'total': valores['total'],
+            'acuracia': acuracia
+        }
     
-    distribuicao = Counter()
-    total = 0
+    # ============================================================================
+    # RELATÓRIO - DISTRIBUIÇÃO DO DATASET
+    # ============================================================================
+    print("\n" + "=" * 80)
+    print("DISTRIBUIÇÃO DO DATASET DE TESTE")
+    print("=" * 80)
+    print(f"\nTotal de testes: {total_testes}")
+    print(f"Testes processados com sucesso: {total_testes - total_erros}")
+    print(f"Erros: {total_erros}")
+    print(f"\nDistribuição por CWE:")
+    print(f"{'CWE':<15} {'Quantidade':<12} {'Percentual'}")
+    print("-" * 50)
     
-    with open(ARQUIVO_DATASET_TESTE, 'r', encoding='utf-8') as f:
-        for linha in f:
-            if linha.strip():
-                try:
-                    item = json.loads(linha)
-                    output_data = json.loads(item.get('output', '{}'))
-                    verdict = output_data.get('verdict', 'Unknown')
-                    
-                    if verdict == 'VULNERABLE':
-                        cwe = output_data.get('weakness', {}).get('id', 'Unknown')
-                        distribuicao[cwe] += 1
-                        total += 1
-                except:
-                    continue
+    dist_sorted = sorted(distribuicao.items(), key=lambda x: x[1], reverse=True)
+    for cwe, qtd in dist_sorted:
+        percentual = (qtd / sum(distribuicao.values())) * 100 if sum(distribuicao.values()) > 0 else 0
+        print(f"{cwe:<15} {qtd:<12} {percentual:>6.1f}%")
     
-    print(f"\n📈 Total de casos VULNERABLE no dataset de teste: {total}")
-    print(f"📋 Distribuição por CWE:\n")
+    # ============================================================================
+    # RELATÓRIO - ANÁLISE 1: RECONHECIMENTO DE CWE (ISOLADO)
+    # ============================================================================
+    print("\n" + "=" * 80)
+    print("ANÁLISE 1: RECONHECIMENTO DE CWE (Independente do Verdict)")
+    print("=" * 80)
+    print("\nMede a capacidade do modelo de identificar CORRETAMENTE o tipo de CWE,")
+    print("independente de classificar como VULNERABLE ou SAFE.\n")
     
-    distribuicao_ordenada = {}
-    for cwe, count in distribuicao.most_common():
-        percentual = (count / total * 100) if total > 0 else 0
-        print(f"  {cwe}: {count:4d} casos ({percentual:5.2f}%)")
-        distribuicao_ordenada[cwe] = {'count': count, 'percentual': percentual}
+    print(f"{'CWE':<15} {'Acertos':<10} {'Total':<10} {'Acurácia'}")
+    print("-" * 55)
     
-    return distribuicao_ordenada
-
-def gerar_relatorio():
-    print("\n" + "="*80)
-    print("🔬 ANÁLISE DE RESULTADOS - DETECÇÃO DE SECURITY DEBT")
-    print("="*80)
+    cwe_isolado_sorted = sorted(metricas_cwe_isolado.items(), 
+                                 key=lambda x: x[1]['acuracia'], 
+                                 reverse=True)
     
-    # 1. Carregar resultados
-    if not os.path.exists(ARQUIVO_RESULTADOS):
-        print(f"❌ Erro: Arquivo {ARQUIVO_RESULTADOS} não encontrado.")
-        return
+    total_acertos_cwe = sum(v['acertos'] for v in metricas_cwe_isolado.values())
+    total_casos_cwe = sum(v['total'] for v in metricas_cwe_isolado.values())
     
-    with open(ARQUIVO_RESULTADOS, 'r', encoding='utf-8') as f:
-        resultados = json.load(f)
+    for cwe, valores in cwe_isolado_sorted:
+        print(f"{cwe:<15} {valores['acertos']:<10} {valores['total']:<10} {valores['acuracia']:>6.1f}%")
     
-    print(f"\n📁 Total de testes carregados: {len(resultados)}")
+    print("-" * 55)
+    acuracia_geral_cwe = (total_acertos_cwe / total_casos_cwe * 100) if total_casos_cwe > 0 else 0
+    print(f"{'TOTAL':<15} {total_acertos_cwe:<10} {total_casos_cwe:<10} {acuracia_geral_cwe:>6.1f}%")
     
-    # 2. Analisar distribuição do dataset
-    distribuicao = analisar_distribuicao_dataset()
+    # ============================================================================
+    # RELATÓRIO - ANÁLISE 2: CLASSIFICAÇÃO DE VERDICT (ISOLADO)
+    # ============================================================================
+    print("\n" + "=" * 80)
+    print("ANÁLISE 2: CLASSIFICAÇÃO DE VERDICT (VULNERABLE vs SAFE)")
+    print("=" * 80)
+    print("\nMede a capacidade do modelo de distinguir código vulnerável de código seguro,")
+    print("independente de identificar corretamente o tipo de CWE.\n")
     
-    # 3. Calcular métricas
-    metricas_cwe, metricas_verdict, total_testes, total_erros = calcular_metricas_por_cwe(resultados)
-    resultados_finais = calcular_metricas_finais(metricas_cwe)
+    print(f"Precisão:  {metricas_verdict_finais['precision']:.1f}%")
+    print(f"Recall:    {metricas_verdict_finais['recall']:.1f}%")
+    print(f"F1-Score:  {metricas_verdict_finais['f1_score']:.1f}%")
+    print(f"Acurácia:  {metricas_verdict_finais['accuracy']:.1f}%")
     
-    # 4. Métricas gerais de VERDICT
-    print("\n" + "="*80)
-    print("🎯 MÉTRICAS GERAIS - DETECÇÃO DE VULNERABILIDADE (VULNERABLE vs SAFE)")
-    print("="*80)
+    print(f"\nMatriz de Confusão:")
+    print(f"  TP (Vulnerável → Vulnerável): {metricas_verdict['TP']}")
+    print(f"  FP (Safe → Vulnerável):        {metricas_verdict['FP']}")
+    print(f"  FN (Vulnerável → Safe):        {metricas_verdict['FN']}")
+    print(f"  TN (Safe → Safe):              {metricas_verdict['TN']}")
     
-    tp_v = metricas_verdict['TP']
-    fp_v = metricas_verdict['FP']
-    fn_v = metricas_verdict['FN']
-    tn_v = metricas_verdict['TN']
+    # ============================================================================
+    # RELATÓRIO - ANÁLISE 3: CWE + VERDICT (COMBINADO)
+    # ============================================================================
+    print("\n" + "=" * 80)
+    print("ANÁLISE 3: CWE + VERDICT (Análise Combinada)")
+    print("=" * 80)
+    print("\nMede a capacidade do modelo de SIMULTANEAMENTE identificar o CWE correto")
+    print("E classificar corretamente como VULNERABLE.\n")
     
-    acuracia_geral = (tp_v + tn_v) / (tp_v + fp_v + fn_v + tn_v) if (tp_v + fp_v + fn_v + tn_v) > 0 else 0
-    precisao_geral = tp_v / (tp_v + fp_v) if (tp_v + fp_v) > 0 else 0
-    recall_geral = tp_v / (tp_v + fn_v) if (tp_v + fn_v) > 0 else 0
-    f1_geral = 2 * (precisao_geral * recall_geral) / (precisao_geral + recall_geral) if (precisao_geral + recall_geral) > 0 else 0
+    print(f"{'CWE':<15} {'Precision':<12} {'Recall':<12} {'F1-Score':<12} {'Acurácia':<12}")
+    print("-" * 70)
     
-    print(f"\n  Acurácia Geral:  {acuracia_geral*100:6.2f}%")
-    print(f"  Precisão:        {precisao_geral*100:6.2f}%")
-    print(f"  Recall:          {recall_geral*100:6.2f}%")
-    print(f"  F1-Score:        {f1_geral*100:6.2f}%")
-    print(f"\n  Matriz de Confusão:")
-    print(f"    TP (Vulnerável detectado):     {tp_v}")
-    print(f"    TN (Seguro detectado):         {tn_v}")
-    print(f"    FP (Falso positivo):           {fp_v}")
-    print(f"    FN (Falso negativo):           {fn_v}")
-    
-    # 5. Métricas por CWE
-    print("\n" + "="*80)
-    print("📊 MÉTRICAS DETALHADAS POR CWE")
-    print("="*80)
-    
-    # Ordenar por F1-Score decrescente
-    cwes_ordenados = sorted(resultados_finais.items(), key=lambda x: x[1]['f1_score'], reverse=True)
-    
-    print(f"\n{'CWE':<10} {'Casos':>7} {'Acertos':>8} {'Precisão':>10} {'Recall':>10} {'F1-Score':>10} {'Acurácia':>10}")
-    print("-" * 80)
-    
+    # Categorizar desempenho
     alto_desempenho = []
     medio_desempenho = []
     baixo_desempenho = []
     
-    for cwe, metrics in cwes_ordenados:
-        print(f"{cwe:<10} {metrics['total_casos']:>7} {metrics['acertos']:>8} "
-              f"{metrics['precisao']*100:>9.1f}% {metrics['recall']*100:>9.1f}% "
-              f"{metrics['f1_score']*100:>9.1f}% {metrics['acuracia']*100:>9.1f}%")
+    metricas_sorted = sorted(metricas_finais.items(), 
+                            key=lambda x: x[1]['f1_score'], 
+                            reverse=True)
+    
+    for cwe, valores in metricas_sorted:
+        print(f"{cwe:<15} {valores['precision']:>6.1f}%      {valores['recall']:>6.1f}%      "
+              f"{valores['f1_score']:>6.1f}%      {valores['accuracy']:>6.1f}%")
         
-        # Categorizar por desempenho
-        if metrics['f1_score'] >= 0.8:
-            alto_desempenho.append((cwe, metrics))
-        elif metrics['f1_score'] >= 0.5:
-            medio_desempenho.append((cwe, metrics))
+        # Categorizar
+        if valores['f1_score'] >= 80:
+            alto_desempenho.append(cwe)
+        elif valores['f1_score'] >= 50:
+            medio_desempenho.append(cwe)
         else:
-            baixo_desempenho.append((cwe, metrics))
+            baixo_desempenho.append(cwe)
     
-    # 6. Análise de desempenho por categoria
-    print("\n" + "="*80)
-    print("📈 ANÁLISE POR CATEGORIA DE DESEMPENHO")
-    print("="*80)
+    # Métricas gerais (ponderadas pelo número de casos)
+    total_tp = sum(metricas_cwe[cwe]['TP'] for cwe in metricas_cwe)
+    total_fp = sum(metricas_cwe[cwe]['FP'] for cwe in metricas_cwe)
+    total_fn = sum(metricas_cwe[cwe]['FN'] for cwe in metricas_cwe)
+    total_tn = sum(metricas_cwe[cwe]['TN'] for cwe in metricas_cwe)
     
-    print(f"\n🟢 ALTO DESEMPENHO (F1 ≥ 80%):")
-    if alto_desempenho:
-        for cwe, metrics in alto_desempenho:
-            dist_info = distribuicao.get(cwe, {})
-            print(f"  • {cwe}: F1={metrics['f1_score']*100:.1f}% | "
-                  f"Casos={metrics['total_casos']} ({dist_info.get('percentual', 0):.1f}% do dataset)")
-    else:
-        print("  Nenhum CWE nesta categoria.")
+    metricas_gerais = calcular_metricas_finais(total_tp, total_fp, total_fn, total_tn)
     
-    print(f"\n🟡 DESEMPENHO MODERADO (50% ≤ F1 < 80%):")
-    if medio_desempenho:
-        for cwe, metrics in medio_desempenho:
-            dist_info = distribuicao.get(cwe, {})
-            print(f"  • {cwe}: F1={metrics['f1_score']*100:.1f}% | "
-                  f"Casos={metrics['total_casos']} ({dist_info.get('percentual', 0):.1f}% do dataset)")
-    else:
-        print("  Nenhum CWE nesta categoria.")
+    print("-" * 70)
+    print(f"{'GERAL':<15} {metricas_gerais['precision']:>6.1f}%      {metricas_gerais['recall']:>6.1f}%      "
+          f"{metricas_gerais['f1_score']:>6.1f}%      {metricas_gerais['accuracy']:>6.1f}%")
     
-    print(f"\n🔴 BAIXO DESEMPENHO (F1 < 50%):")
-    if baixo_desempenho:
-        for cwe, metrics in baixo_desempenho:
-            dist_info = distribuicao.get(cwe, {})
-            print(f"  • {cwe}: F1={metrics['f1_score']*100:.1f}% | "
-                  f"Casos={metrics['total_casos']} ({dist_info.get('percentual', 0):.1f}% do dataset)")
-            print(f"    └─ Possível causa: Dataset desbalanceado ({dist_info.get('percentual', 0):.1f}% dos casos)")
-    else:
-        print("  Nenhum CWE nesta categoria.")
+    print(f"\nCategorização de Desempenho:")
+    print(f"  Alto (F1 ≥ 80%):   {len(alto_desempenho)} CWEs - {alto_desempenho}")
+    print(f"  Médio (50-80%):    {len(medio_desempenho)} CWEs - {medio_desempenho}")
+    print(f"  Baixo (< 50%):     {len(baixo_desempenho)} CWEs - {baixo_desempenho}")
     
-    # 7. Análise de correlação entre desempenho e quantidade de dados
-    print("\n" + "="*80)
-    print("🔍 ANÁLISE DE CORRELAÇÃO: Desempenho vs Quantidade de Dados")
-    print("="*80)
+    # ============================================================================
+    # RELATÓRIO - ANÁLISE 4: STRIDE (Modelo de Ameaças)
+    # ============================================================================
+    print("\n" + "=" * 80)
+    print("ANÁLISE 4: STRIDE (Modelo de Ameaças)")
+    print("=" * 80)
+    print("\nMede a capacidade do modelo de classificar corretamente a categoria STRIDE")
+    print("das vulnerabilidades detectadas.\n")
     
-    print("\nCWEs com MENOS de 5% do dataset:")
-    for cwe, metrics in cwes_ordenados:
-        dist_info = distribuicao.get(cwe, {})
-        percentual = dist_info.get('percentual', 0)
-        if percentual < 5:
-            print(f"  • {cwe}: {percentual:.2f}% do dataset | F1-Score: {metrics['f1_score']*100:.1f}%")
+    print(f"{'STRIDE':<30} {'Acertos':<10} {'Total':<10} {'Acurácia'}")
+    print("-" * 65)
     
-    # 8. Recomendações para o artigo
-    print("\n" + "="*80)
-    print("📝 RECOMENDAÇÕES PARA O ARTIGO")
-    print("="*80)
+    stride_sorted = sorted(metricas_stride_finais.items(), 
+                           key=lambda x: x[1]['acuracia'], 
+                           reverse=True)
     
-    print("\n1. RESULTADOS POSITIVOS:")
-    print("   • Sistema apresenta excelente desempenho geral")
-    print(f"   • Acurácia de {acuracia_geral*100:.1f}% na detecção binária (VULNERABLE vs SAFE)")
-    print(f"   • {len(alto_desempenho)} CWEs com F1-Score > 80%")
+    total_acertos_stride = sum(v['corretos'] for v in metricas_stride_finais.values())
+    total_casos_stride = sum(v['total'] for v in metricas_stride_finais.values())
     
-    print("\n2. LIMITAÇÕES IDENTIFICADAS:")
-    if baixo_desempenho:
-        print(f"   • {len(baixo_desempenho)} CWEs com desempenho abaixo de 50%:")
-        for cwe, metrics in baixo_desempenho:
-            dist_info = distribuicao.get(cwe, {})
-            print(f"     - {cwe}: apenas {dist_info.get('percentual', 0):.1f}% do dataset")
+    for stride, valores in stride_sorted:
+        print(f"{stride:<30} {valores['corretos']:<10} {valores['total']:<10} {valores['acuracia']:>6.1f}%")
     
-    print("\n3. HIPÓTESES PARA DISCUSSÃO:")
-    print("   • Desbalanceamento do dataset afeta negativamente o desempenho")
-    print("   • CWEs sub-representados (<5% do dataset) têm F1-Score reduzido")
-    print("   • Necessidade de técnicas de balanceamento (SMOTE, oversampling)")
+    print("-" * 65)
+    acuracia_geral_stride = (total_acertos_stride / total_casos_stride * 100) if total_casos_stride > 0 else 0
+    print(f"{'TOTAL':<30} {total_acertos_stride:<10} {total_casos_stride:<10} {acuracia_geral_stride:>6.1f}%")
     
-    print("\n4. TRABALHOS FUTUROS:")
-    print("   • Implementar balanceamento de classes")
-    print("   • Aumentar quantidade de exemplos para CWEs problemáticos")
-    print("   • Explorar fine-tuning específico para categorias difíceis")
+    # Matriz de Confusão STRIDE
+    print(f"\nMatriz de Confusão STRIDE:")
+    header_label = 'Ground Truth \\ Predito'
+    print(f"{header_label:<30}", end="")
     
-    print("\n" + "="*80)
-    print("✅ Análise concluída!")
-    print("="*80)
+    # Cabeçalho
+    stride_categories = sorted(set(list(matriz_confusao_stride.keys()) + 
+                                   [k for v in matriz_confusao_stride.values() for k in v.keys()]))
     
-    # 9. Salvar resultados em JSON para uso posterior
-    resultados_analise = {
-        'metricas_gerais': {
-            'acuracia': acuracia_geral,
-            'precisao': precisao_geral,
-            'recall': recall_geral,
-            'f1_score': f1_geral,
-            'total_testes': total_testes,
-            'total_erros': total_erros
-        },
-        'metricas_por_cwe': resultados_finais,
+    for cat in stride_categories:
+        print(f"{cat[:15]:<20}", end="")
+    print()
+    print("-" * (30 + 20 * len(stride_categories)))
+    
+    # Linhas
+    for gt_stride in stride_categories:
+        print(f"{gt_stride:<30}", end="")
+        for pred_stride in stride_categories:
+            count = matriz_confusao_stride[gt_stride].get(pred_stride, 0)
+            print(f"{count:<20}", end="")
+        print()
+    
+    # ============================================================================
+    # EXPORTAR JSON
+    # ============================================================================
+    relatorio_completo = {
         'distribuicao_dataset': distribuicao,
-        'categorias_desempenho': {
-            'alto': [cwe for cwe, _ in alto_desempenho],
-            'medio': [cwe for cwe, _ in medio_desempenho],
-            'baixo': [cwe for cwe, _ in baixo_desempenho]
+        'total_testes': total_testes,
+        'total_erros': total_erros,
+        'analise_1_reconhecimento_cwe': {
+            'metricas_por_cwe': metricas_cwe_isolado,
+            'acuracia_geral': acuracia_geral_cwe,
+            'total_acertos': total_acertos_cwe,
+            'total_casos': total_casos_cwe
+        },
+        'analise_2_verdict_isolado': {
+            'metricas': metricas_verdict_finais,
+            'matriz_confusao': metricas_verdict
+        },
+        'analise_3_cwe_verdict_combinado': {
+            'metricas_por_cwe': metricas_finais,
+            'metricas_gerais': metricas_gerais,
+            'categorias_desempenho': {
+                'alto': alto_desempenho,
+                'medio': medio_desempenho,
+                'baixo': baixo_desempenho
+            }
+        },
+        'analise_4_stride': {
+            'metricas_por_categoria': metricas_stride_finais,
+            'acuracia_geral': acuracia_geral_stride,
+            'total_acertos': total_acertos_stride,
+            'total_casos': total_casos_stride,
+            'matriz_confusao': {k: dict(v) for k, v in matriz_confusao_stride.items()}
         }
     }
     
+    # Salvar JSON
     with open('analise_completa.json', 'w', encoding='utf-8') as f:
-        json.dump(resultados_analise, f, indent=2, ensure_ascii=False)
+        json.dump(relatorio_completo, f, indent=2, ensure_ascii=False)
     
-    print(f"\n💾 Resultados detalhados salvos em 'analise_completa.json'")
+    print("\n" + "=" * 80)
+    print("✓ Relatório completo salvo em: analise_completa.json")
+    print("=" * 80)
+    
+    return relatorio_completo
 
 if __name__ == "__main__":
     gerar_relatorio()
+
