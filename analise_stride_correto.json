@@ -1,31 +1,56 @@
 {
-  "total_testes": 10,
-  "stride_correto": 10,
+  "total_testes": 45,
+  "stride_correto": 45,
   "stride_incorreto": 0,
-  "cwe_correto": 8,
-  "sem_erro": 10,
+  "cwe_correto": 37,
+  "sem_erro": 45,
   "erros_por_cwe": {
     "CWE-328": {
-      "total": 2,
+      "total": 6,
       "erros": 0,
       "confusoes": {}
     },
     "CWE-89": {
-      "total": 3,
+      "total": 12,
       "erros": 0,
       "confusoes": {}
     },
     "CWE-79": {
-      "total": 3,
+      "total": 10,
       "erros": 0,
       "confusoes": {}
     },
     "CWE-330": {
-      "total": 1,
+      "total": 3,
       "erros": 0,
       "confusoes": {}
     },
     "CWE-327": {
+      "total": 4,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-78": {
+      "total": 4,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-22": {
+      "total": 3,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-90": {
+      "total": 1,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-501": {
+      "total": 1,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-614": {
       "total": 1,
       "erros": 0,
       "confusoes": {}

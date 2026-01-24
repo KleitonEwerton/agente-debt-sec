@@ -1,84 +1,131 @@
 {
   "resumo_geral": {
-    "total_testes": 10,
-    "testes_validos": 10,
+    "total_testes": 45,
+    "testes_validos": 45,
     "erros": 0
   },
   "analises": {
     "1_cwe_isolado": {
       "descricao": "Reconhecimento do tipo de CWE (ignorando veredito)",
       "metricas_por_cwe": {
-        "CWE-327": {
-          "acertos": 1,
-          "total": 1,
+        "CWE-22": {
+          "acertos": 3,
+          "total": 3,
           "acuracia": 100.0
+        },
+        "CWE-327": {
+          "acertos": 3,
+          "total": 4,
+          "acuracia": 75.0
         },
         "CWE-328": {
           "acertos": 0,
-          "total": 2,
+          "total": 6,
           "acuracia": 0.0
         },
         "CWE-330": {
+          "acertos": 3,
+          "total": 3,
+          "acuracia": 100.0
+        },
+        "CWE-501": {
           "acertos": 1,
           "total": 1,
           "acuracia": 100.0
         },
+        "CWE-614": {
+          "acertos": 0,
+          "total": 1,
+          "acuracia": 0.0
+        },
+        "CWE-78": {
+          "acertos": 4,
+          "total": 4,
+          "acuracia": 100.0
+        },
         "CWE-79": {
-          "acertos": 3,
-          "total": 3,
+          "acertos": 10,
+          "total": 10,
           "acuracia": 100.0
         },
         "CWE-89": {
-          "acertos": 3,
-          "total": 3,
+          "acertos": 12,
+          "total": 12,
+          "acuracia": 100.0
+        },
+        "CWE-90": {
+          "acertos": 1,
+          "total": 1,
           "acuracia": 100.0
         }
       },
-      "acuracia_geral": 80.0,
-      "total_acertos": 8,
-      "total_testes": 10
+      "acuracia_geral": 82.22,
+      "total_acertos": 37,
+      "total_testes": 45
     },
     "2_verdict_isolado": {
       "descricao": "Classificação VULNERABLE vs SAFE (ignorando CWE)",
       "matriz_confusao": {
-        "TP": 7,
+        "TP": 27,
         "TN": 0,
-        "FP": 3,
+        "FP": 18,
         "FN": 0
       },
       "metricas": {
-        "precisao": 70.0,
+        "precisao": 60.0,
         "recall": 100.0,
-        "f1_score": 82.35,
-        "acuracia": 70.0
+        "f1_score": 75.0,
+        "acuracia": 60.0
       }
     },
     "3_combinado": {
       "descricao": "CWE correto E veredito correto (métrica mais rigorosa)",
       "metricas_por_cwe": {
-        "CWE-327": {
-          "TP": 1,
+        "CWE-22": {
+          "TP": 3,
           "TN": 0,
           "FP": 0,
           "FN": 0,
-          "total": 1,
+          "total": 3,
           "precisao": 100.0,
           "recall": 100.0,
           "f1_score": 100.0,
           "acuracia": 100.0
         },
+        "CWE-327": {
+          "TP": 3,
+          "TN": 0,
+          "FP": 1,
+          "FN": 0,
+          "total": 4,
+          "precisao": 75.0,
+          "recall": 100.0,
+          "f1_score": 85.71,
+          "acuracia": 75.0
+        },
         "CWE-328": {
           "TP": 0,
           "TN": 0,
-          "FP": 1,
-          "FN": 1,
-          "total": 2,
+          "FP": 3,
+          "FN": 3,
+          "total": 6,
           "precisao": 0.0,
           "recall": 0.0,
           "f1_score": 0,
           "acuracia": 0.0
         },
         "CWE-330": {
+          "TP": 1,
+          "TN": 0,
+          "FP": 2,
+          "FN": 0,
+          "total": 3,
+          "precisao": 33.33,
+          "recall": 100.0,
+          "f1_score": 50.0,
+          "acuracia": 33.33
+        },
+        "CWE-501": {
           "TP": 0,
           "TN": 0,
           "FP": 1,
@@ -89,32 +136,65 @@
           "f1_score": 0,
           "acuracia": 0.0
         },
-        "CWE-79": {
+        "CWE-614": {
+          "TP": 0,
+          "TN": 0,
+          "FP": 0,
+          "FN": 1,
+          "total": 1,
+          "precisao": 0,
+          "recall": 0.0,
+          "f1_score": 0,
+          "acuracia": 0.0
+        },
+        "CWE-78": {
           "TP": 2,
           "TN": 0,
-          "FP": 1,
+          "FP": 2,
           "FN": 0,
-          "total": 3,
+          "total": 4,
+          "precisao": 50.0,
+          "recall": 100.0,
+          "f1_score": 66.67,
+          "acuracia": 50.0
+        },
+        "CWE-79": {
+          "TP": 5,
+          "TN": 0,
+          "FP": 5,
+          "FN": 0,
+          "total": 10,
+          "precisao": 50.0,
+          "recall": 100.0,
+          "f1_score": 66.67,
+          "acuracia": 50.0
+        },
+        "CWE-89": {
+          "TP": 8,
+          "TN": 0,
+          "FP": 4,
+          "FN": 0,
+          "total": 12,
           "precisao": 66.67,
           "recall": 100.0,
           "f1_score": 80.0,
           "acuracia": 66.67
         },
-        "CWE-89": {
-          "TP": 3,
+        "CWE-90": {
+          "TP": 1,
           "TN": 0,
           "FP": 0,
           "FN": 0,
-          "total": 3,
+          "total": 1,
           "precisao": 100.0,
           "recall": 100.0,
           "f1_score": 100.0,
           "acuracia": 100.0
         }
       },
-      "acuracia_geral": 60.0,
-      "total_acertos": 6,
-      "total_testes": 10
+      "acuracia_geral": 51.11,
+      "total_acertos": 23,
+      "total_testes": 45
     },
     "4_stride": {
       "descricao": "Classificação de ameaças segundo modelo STRIDE",

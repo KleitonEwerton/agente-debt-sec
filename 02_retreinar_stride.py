@@ -168,8 +168,10 @@ def retreinar_stride():
         if resposta.lower() == 's':
             with open(ARQUIVO_RESULTADOS_NOVO, 'r', encoding='utf-8') as f:
                 resultados = json.load(f)
-                teste_inicial = len(resultados)
-                print(f"✓ Continuando do teste {teste_inicial}")
+                # Encontrar o último teste_idx processado (não usa len, pois usuário pode ter apagado itens)
+                if resultados:
+                    teste_inicial = max(item['teste_idx'] for item in resultados) + 1
+                print(f"✓ Continuando do teste {teste_inicial} (total de {len(resultados)} resultados salvos)")
 
     # 4. Inicializar LLM
     prompt = ChatPromptTemplate.from_template(prompt_template_security)
@@ -178,7 +180,7 @@ def retreinar_stride():
 
     # 5. Executar testes
     print(f"\n🚀 Iniciando testes ({teste_inicial} até {total_testes})...\n")
-    print("💾 Salvamento automático a cada 10 testes\n")
+    print("💾 Salvamento automático após cada resposta\n")
     
     for idx in range(teste_inicial, total_testes):
         item = dados_teste[idx]
@@ -231,8 +233,12 @@ def retreinar_stride():
                 "resultado_llm": resultado_llm
             })
             
+            # Salvar IMEDIATAMENTE após cada resposta (proteção contra rate limit)
+            with open(ARQUIVO_RESULTADOS_NOVO, 'w', encoding='utf-8') as f:
+                json.dump(resultados, f, indent=2, ensure_ascii=False)
+            
             logging.info(f"Teste {idx} concluído com sucesso")
-            print("✅")
+            print(f"✅ (💾 {len(resultados)} salvos)")
             
         except Exception as e:
             logging.error(f"Erro no teste {idx}: {str(e)}")
@@ -243,6 +249,11 @@ def retreinar_stride():
                 "ground_truth": ground_truth,
                 "erro": str(e)
             })
+            
+            # Salvar também em caso de erro
+            with open(ARQUIVO_RESULTADOS_NOVO, 'w', encoding='utf-8') as f:
+                json.dump(resultados, f, indent=2, ensure_ascii=False)
+            
             print(f"❌ Erro: {str(e)[:50]}")
         
         # Rate limiting
@@ -251,12 +262,6 @@ def retreinar_stride():
         if (idx + 1) % REQUISICOES_POR_LOTE == 0:
             print(f"⏸️  Pausa de {PAUSA_LOTE}s (limite de taxa)...")
             time.sleep(PAUSA_LOTE)
-        
-        # Salvar incrementalmente a cada 10 testes
-        if (idx + 1) % 10 == 0 or idx == total_testes - 1:
-            with open(ARQUIVO_RESULTADOS_NOVO, 'w', encoding='utf-8') as f:
-                json.dump(resultados, f, indent=2, ensure_ascii=False)
-            print(f"💾 Progresso salvo: {idx+1}/{total_testes} testes completos")
 
     print("\n\n" + "=" * 80)
     print("✅ RE-EXECUÇÃO CONCLUÍDA!")
