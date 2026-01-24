@@ -13,6 +13,21 @@ PATH_CSV = "expectedresults-1.2.csv"
 PATH_CWE_XML = "cwec_v4.18.xml"                     # Coloque este arquivo na raiz
 PATH_CAPEC_XML = "capec_v3.9.xml"                   # Coloque este arquivo na raiz
 OUTPUT_FILE = "dataset_treino_mestrado.jsonl"
+
+# Mapeamento CWE → STRIDE baseado na natureza da vulnerabilidade
+CWE_TO_STRIDE_MAP = {
+    "CWE-22": ["Information Disclosure"],  # Path Traversal expõe arquivos
+    "CWE-78": ["Tampering"],               # Command Injection modifica sistema
+    "CWE-79": ["Tampering"],               # XSS modifica página web
+    "CWE-89": ["Tampering"],               # SQL Injection modifica dados
+    "CWE-90": ["Tampering"],               # LDAP Injection modifica consultas
+    "CWE-327": ["Spoofing"],               # Broken Crypto afeta autenticação
+    "CWE-328": ["Spoofing"],               # Weak Hash afeta autenticação
+    "CWE-330": ["Spoofing"],               # Weak Random afeta tokens/sessions
+    "CWE-501": ["Tampering"],              # Trust Boundary mistura dados
+    "CWE-614": ["Information Disclosure"], # Sensitive Cookie expõe informação
+    "CWE-643": ["Tampering"],              # XPath Injection modifica consultas
+}
 # =================================================
 
 def parse_mitre_definitions():
@@ -109,6 +124,10 @@ def main():
                 all_strides = set()
                 for t in threat_info:
                     all_strides.update(t['inferred_stride'])
+                
+                # Se não conseguiu inferir do CAPEC, usar mapeamento direto CWE→STRIDE
+                if not all_strides and cwe_key in CWE_TO_STRIDE_MAP:
+                    all_strides = set(CWE_TO_STRIDE_MAP[cwe_key])
                 
                 entry = {
                     "instruction": f"Analyze the provided Java code snippet. Detect if it contains a Security Debt item (Vulnerability). If vulnerable, identify the CWE and potential CAPEC attack patterns.",

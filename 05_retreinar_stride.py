@@ -182,13 +182,14 @@ def retreinar_stride():
 
     # 5. Executar testes
     print(f"\n🚀 Iniciando testes ({teste_inicial} até {total_testes})...\n")
+    print("💾 Salvamento automático a cada 10 testes\n")
     
     for idx in range(teste_inicial, total_testes):
         item = dados_teste[idx]
         codigo = item.get('input', '')
         ground_truth = item.get('output', '{}')
         
-        print(f"\r🔍 Teste {idx+1}/{total_testes}", end='', flush=True)
+        print(f"🔍 Teste {idx+1}/{total_testes}... ", end='', flush=True)
         
         try:
             # Buscar contexto RAG
@@ -235,6 +236,7 @@ def retreinar_stride():
             })
             
             logging.info(f"Teste {idx} concluído com sucesso")
+            print("✅")
             
         except Exception as e:
             logging.error(f"Erro no teste {idx}: {str(e)}")
@@ -245,19 +247,20 @@ def retreinar_stride():
                 "ground_truth": ground_truth,
                 "erro": str(e)
             })
+            print(f"❌ Erro: {str(e)[:50]}")
         
         # Rate limiting
         time.sleep(PAUSA_ENTRE_REQUISICOES)
         
         if (idx + 1) % REQUISICOES_POR_LOTE == 0:
-            print(f"\n⏸️  Pausa de {PAUSA_LOTE}s (limite de taxa)...")
+            print(f"⏸️  Pausa de {PAUSA_LOTE}s (limite de taxa)...")
             time.sleep(PAUSA_LOTE)
         
         # Salvar incrementalmente a cada 10 testes
         if (idx + 1) % 10 == 0 or idx == total_testes - 1:
             with open(ARQUIVO_RESULTADOS_NOVO, 'w', encoding='utf-8') as f:
                 json.dump(resultados, f, indent=2, ensure_ascii=False)
-            print(f"\n💾 Progresso salvo ({idx+1}/{total_testes})")
+            print(f"💾 Progresso salvo: {idx+1}/{total_testes} testes completos")
 
     print("\n\n" + "=" * 80)
     print("✅ RE-EXECUÇÃO CONCLUÍDA!")
