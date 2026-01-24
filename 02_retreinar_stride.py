@@ -66,65 +66,43 @@ IMPORTANT: Focus on PATTERN DETECTION, not exploitability:
 - CWE-643: XPath Injection (unsanitized input in XPath queries)
 
 ===== STRIDE CLASSIFICATION GUIDE =====
-Analyze the PRIMARY security impact and choose ONE category:
+Choose ONE category by analyzing operation type:
 
-**Tampering** - Unauthorized modification of data or code:
-- SQL/LDAP/XPath Injection that MODIFIES data (INSERT, UPDATE, DELETE)
-- Command injection that CHANGES system state
-- Path traversal that WRITES/MODIFIES files
-- Example: SQL injection that deletes records, command injection that modifies files
+**Tampering** (WRITE/MODIFY operations):
+- SQL: INSERT/UPDATE/DELETE with user input
+- Command injection modifying files/system
+- Path traversal WRITING files
 
-**Spoofing** - Impersonation or identity falsification:
-- Weak cryptography used for AUTHENTICATION (password hashing with MD5/SHA1)
-- Weak random numbers for SESSION tokens, authentication tokens, or "remember me" keys
-- Insecure cookies used for AUTHENTICATION without Secure/HttpOnly flags
-- Trust boundary violations where attacker can IMPERSONATE legitimate users
-- Example: MD5 password hashing, predictable session tokens
+**Information Disclosure** (READ operations):
+- SQL: SELECT with user input
+- Path traversal READING files
+- XSS stealing cookies
+- Weak crypto for stored data
 
-**Repudiation** - Denial of actions performed:
-- Logging bypasses that allow attackers to hide their actions
-- Path traversal affecting LOG files
-- Weak cryptography for AUDIT trails or digital signatures
-- Example: Command injection that deletes logs, path traversal that overwrites audit files
+**Spoofing** (AUTHENTICATION context):
+- Weak crypto for passwords (MD5, SHA1)
+- Weak random for session tokens
+- Insecure auth cookies
 
-**Information Disclosure** - Exposure of confidential data:
-- SQL/LDAP/XPath Injection that READS sensitive data (SELECT queries)
-- Path traversal that READS sensitive files (passwords, configs, source code)
-- XSS that STEALS cookies or session data
-- Weak encryption of STORED sensitive data
-- Example: SQL injection extracting passwords, path traversal reading configuration files
+**Elevation of Privilege** (PRIVILEGE context):
+- Command injection as root/admin
+- SQL bypassing access controls
+- Path traversal accessing system files
 
-**Denial of Service** - Service disruption or resource exhaustion:
-- Command injection causing system crashes
-- SQL injection with resource-intensive queries
-- Example: Shell fork bombs, infinite loop SQL queries
+**Repudiation**: Log manipulation
+**Denial of Service**: Resource exhaustion
 
-**Elevation of Privilege** - Gaining unauthorized permissions:
-- Command injection executed with elevated privileges (root/admin)
-- SQL injection bypassing access controls
-- Path traversal accessing restricted system files
-- Example: Command injection as root, SQL injection bypassing admin checks
+Decision hierarchy:
+1. AUTH + weak crypto/random → Spoofing
+2. Root/admin execution → Elevation of Privilege
+3. WRITE/MODIFY → Tampering
+4. READ sensitive → Information Disclosure
 
-CRITICAL DECISION RULES:
-1. If vulnerability involves DATA MODIFICATION → Tampering
-2. If involves AUTHENTICATION/IDENTITY → Spoofing  
-3. If involves READING sensitive data → Information Disclosure
-4. If involves HIDING attacker actions → Repudiation
-5. If involves PRIVILEGE ESCALATION → Elevation of Privilege
-6. If causes SERVICE DISRUPTION → Denial of Service
-
-COMMON MAPPINGS:
-- SQL Injection (SELECT) → Information Disclosure OR Tampering (if modifies data)
-- SQL Injection (INSERT/UPDATE/DELETE) → Tampering
-- XSS → Information Disclosure (steals data via JavaScript)
-- Command Injection → Tampering OR Elevation of Privilege
-- Path Traversal (read) → Information Disclosure
-- Path Traversal (write) → Tampering
-- Weak crypto for passwords → Spoofing
-- Weak crypto for stored data → Information Disclosure
-- Weak random for sessions → Spoofing
-- Insecure auth cookies → Spoofing
-- Trust boundary violation → Spoofing
+Key examples:
+- SELECT query → Information Disclosure
+- INSERT/UPDATE/DELETE → Tampering
+- Runtime.exec() as root → Elevation of Privilege
+- MD5 password hash → Spoofing
 
 Respond strictly in JSON format:
 {{
