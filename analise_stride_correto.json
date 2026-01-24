@@ -1,0 +1,36 @@
+{
+  "total_testes": 10,
+  "stride_correto": 10,
+  "stride_incorreto": 0,
+  "cwe_correto": 8,
+  "sem_erro": 10,
+  "erros_por_cwe": {
+    "CWE-328": {
+      "total": 2,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-89": {
+      "total": 3,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-79": {
+      "total": 3,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-330": {
+      "total": 1,
+      "erros": 0,
+      "confusoes": {}
+    },
+    "CWE-327": {
+      "total": 1,
+      "erros": 0,
+      "confusoes": {}
+    }
+  },
+  "matriz_confusao": {},
+  "detalhes_erros": []
+}

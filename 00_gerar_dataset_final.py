@@ -19,17 +19,17 @@ OUTPUT_FILE = "dataset_treino_mestrado.jsonl"
 # Múltiplos STRIDE quando vulnerabilidade tem impactos diferentes dependendo do contexto
 # NOTA: Este mapeamento NÃO é incluído no dataset (economiza tokens API)
 CWE_TO_STRIDE_MAP = {
-    "CWE-22": ["Information Disclosure"],                      # Path Traversal
-    "CWE-78": ["Elevation of Privilege", "Tampering"],         # OS Command Injection
-    "CWE-79": ["Tampering", "Elevation of Privilege"],         # XSS
-    "CWE-89": ["Tampering", "Information Disclosure"],         # SQL Injection
-    "CWE-90": ["Information Disclosure", "Elevation of Privilege"], # LDAP Injection
-    "CWE-327": ["Information Disclosure"],                     # Broken Cryptographic Algorithm
-    "CWE-328": ["Information Disclosure"],                     # Reversible One-Way Hash
-    "CWE-330": ["Spoofing", "Information Disclosure"],         # Weak Random Values
-    "CWE-501": ["Elevation of Privilege", "Spoofing"],         # Trust Boundary Violation
-    "CWE-614": ["Information Disclosure"],                     # Sensitive Cookie without Secure
-    "CWE-643": ["Information Disclosure", "Elevation of Privilege"], # XPath Injection
+    "CWE-22": ["Information Disclosure"],                                   # Path Traversal
+    "CWE-78": ["Elevation of Privilege", "Tampering"],                      # OS Command Injection
+    "CWE-79": ["Tampering", "Elevation of Privilege", "Information Disclosure"],         # XSS
+    "CWE-89": ["Tampering", "Information Disclosure"],                      # SQL Injection
+    "CWE-90": ["Information Disclosure", "Elevation of Privilege"],         # LDAP Injection
+    "CWE-327": ["Information Disclosure", "Spoofing"],                      # Broken Cryptographic Algorithm
+    "CWE-328": ["Information Disclosure", "Spoofing"],                      # Reversible One-Way Hash
+    "CWE-330": ["Spoofing", "Information Disclosure"],                      # Weak Random Values
+    "CWE-501": ["Elevation of Privilege", "Spoofing"],                      # Trust Boundary Violation
+    "CWE-614": ["Information Disclosure"],                                  # Sensitive Cookie without Secure
+    "CWE-643": ["Information Disclosure", "Elevation of Privilege"],        # XPath Injection
 }
 # =================================================
 

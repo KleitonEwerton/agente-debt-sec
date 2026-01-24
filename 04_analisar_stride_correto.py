@@ -9,17 +9,17 @@ from collections import defaultdict
 # Fonte: Mapeamento CWE para STRIDE.csv
 # Aceita múltiplas categorias quando vulnerabilidade tem impactos contextuais
 CWE_TO_STRIDE_CORRETO = {
-    "CWE-22": ["Information Disclosure"],
-    "CWE-78": ["Elevation of Privilege", "Tampering"],
-    "CWE-79": ["Tampering", "Elevation of Privilege"],
-    "CWE-89": ["Tampering", "Information Disclosure"],
-    "CWE-90": ["Information Disclosure", "Elevation of Privilege"],
-    "CWE-327": ["Information Disclosure"],
-    "CWE-328": ["Information Disclosure"],
-    "CWE-330": ["Spoofing", "Information Disclosure"],
-    "CWE-501": ["Elevation of Privilege", "Spoofing"],
-    "CWE-614": ["Information Disclosure"],
-    "CWE-643": ["Information Disclosure", "Elevation of Privilege"],
+   "CWE-22": ["Information Disclosure"],                                   # Path Traversal
+    "CWE-78": ["Elevation of Privilege", "Tampering"],                      # OS Command Injection
+    "CWE-79": ["Tampering", "Elevation of Privilege", "Information Disclosure"],         # XSS
+    "CWE-89": ["Tampering", "Information Disclosure"],                      # SQL Injection
+    "CWE-90": ["Information Disclosure", "Elevation of Privilege"],         # LDAP Injection
+    "CWE-327": ["Information Disclosure", "Spoofing"],                      # Broken Cryptographic Algorithm
+    "CWE-328": ["Information Disclosure", "Spoofing"],                      # Reversible One-Way Hash
+    "CWE-330": ["Spoofing", "Information Disclosure"],                      # Weak Random Values
+    "CWE-501": ["Elevation of Privilege", "Spoofing"],                      # Trust Boundary Violation
+    "CWE-614": ["Information Disclosure"],                                  # Sensitive Cookie without Secure
+    "CWE-643": ["Information Disclosure", "Elevation of Privilege"],        # XPath Injection
 }
 
 ARQUIVO_RESULTADOS = "resultados_teste_stride_melhorado.json"
