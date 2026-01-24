@@ -14,19 +14,22 @@ PATH_CWE_XML = "cwec_v4.18.xml"                     # Coloque este arquivo na ra
 PATH_CAPEC_XML = "capec_v3.9.xml"                   # Coloque este arquivo na raiz
 OUTPUT_FILE = "dataset_treino_mestrado.jsonl"
 
-# Mapeamento CWE → STRIDE baseado na natureza da vulnerabilidade
+# Mapeamento CWE → STRIDE baseado em análise acadêmica
+# Fonte: Mapeamento CWE para STRIDE.csv
+# Múltiplos STRIDE quando vulnerabilidade tem impactos diferentes dependendo do contexto
+# NOTA: Este mapeamento NÃO é incluído no dataset (economiza tokens API)
 CWE_TO_STRIDE_MAP = {
-    "CWE-22": ["Information Disclosure"],  # Path Traversal expõe arquivos
-    "CWE-78": ["Tampering"],               # Command Injection modifica sistema
-    "CWE-79": ["Tampering"],               # XSS modifica página web
-    "CWE-89": ["Tampering"],               # SQL Injection modifica dados
-    "CWE-90": ["Tampering"],               # LDAP Injection modifica consultas
-    "CWE-327": ["Spoofing"],               # Broken Crypto afeta autenticação
-    "CWE-328": ["Spoofing"],               # Weak Hash afeta autenticação
-    "CWE-330": ["Spoofing"],               # Weak Random afeta tokens/sessions
-    "CWE-501": ["Tampering"],              # Trust Boundary mistura dados
-    "CWE-614": ["Information Disclosure"], # Sensitive Cookie expõe informação
-    "CWE-643": ["Tampering"],              # XPath Injection modifica consultas
+    "CWE-22": ["Information Disclosure"],                      # Path Traversal
+    "CWE-78": ["Elevation of Privilege", "Tampering"],         # OS Command Injection
+    "CWE-79": ["Tampering", "Elevation of Privilege"],         # XSS
+    "CWE-89": ["Tampering", "Information Disclosure"],         # SQL Injection
+    "CWE-90": ["Information Disclosure", "Elevation of Privilege"], # LDAP Injection
+    "CWE-327": ["Information Disclosure"],                     # Broken Cryptographic Algorithm
+    "CWE-328": ["Information Disclosure"],                     # Reversible One-Way Hash
+    "CWE-330": ["Spoofing", "Information Disclosure"],         # Weak Random Values
+    "CWE-501": ["Elevation of Privilege", "Spoofing"],         # Trust Boundary Violation
+    "CWE-614": ["Information Disclosure"],                     # Sensitive Cookie without Secure
+    "CWE-643": ["Information Disclosure", "Elevation of Privilege"], # XPath Injection
 }
 # =================================================
 
@@ -129,6 +132,8 @@ def main():
                 if not all_strides and cwe_key in CWE_TO_STRIDE_MAP:
                     all_strides = set(CWE_TO_STRIDE_MAP[cwe_key])
                 
+                # STRIDE NÃO é incluído no dataset (LLM infere via prompt)
+                # Isso economiza tokens e evita "ensinar" mapeamentos incorretos
                 entry = {
                     "instruction": f"Analyze the provided Java code snippet. Detect if it contains a Security Debt item (Vulnerability). If vulnerable, identify the CWE and potential CAPEC attack patterns.",
                     "input": clean_code(raw_code),
@@ -140,8 +145,7 @@ def main():
                             "description": cwe_info['description']
                         },
                         "threat_model": {
-                            "related_capecs": [t['id'] for t in threat_info[:3]], # Limitando a 3 para não estourar contexto
-                            "stride_categories": list(all_strides) if all_strides else ["Unknown"]
+                            "related_capecs": [t['id'] for t in threat_info[:3]]  # Limitando a 3
                         }
                     })
                 }

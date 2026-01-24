@@ -1,8 +1,8 @@
 {
   "resumo_geral": {
     "total_testes": 10,
-    "testes_validos": 9,
-    "erros": 1
+    "testes_validos": 10,
+    "erros": 0
   },
   "analises": {
     "1_cwe_isolado": {
@@ -15,7 +15,7 @@
         },
         "CWE-328": {
           "acertos": 0,
-          "total": 1,
+          "total": 2,
           "acuracia": 0.0
         },
         "CWE-330": {
@@ -34,23 +34,23 @@
           "acuracia": 100.0
         }
       },
-      "acuracia_geral": 88.89,
+      "acuracia_geral": 80.0,
       "total_acertos": 8,
-      "total_testes": 9
+      "total_testes": 10
     },
     "2_verdict_isolado": {
       "descricao": "Classificação VULNERABLE vs SAFE (ignorando CWE)",
       "matriz_confusao": {
         "TP": 7,
         "TN": 0,
-        "FP": 2,
+        "FP": 3,
         "FN": 0
       },
       "metricas": {
-        "precisao": 77.78,
+        "precisao": 70.0,
         "recall": 100.0,
-        "f1_score": 87.5,
-        "acuracia": 77.78
+        "f1_score": 82.35,
+        "acuracia": 70.0
       }
     },
     "3_combinado": {
@@ -70,10 +70,10 @@
         "CWE-328": {
           "TP": 0,
           "TN": 0,
-          "FP": 0,
+          "FP": 1,
           "FN": 1,
-          "total": 1,
-          "precisao": 0,
+          "total": 2,
+          "precisao": 0.0,
           "recall": 0.0,
           "f1_score": 0,
           "acuracia": 0.0
@@ -112,48 +112,18 @@
           "acuracia": 100.0
         }
       },
-      "acuracia_geral": 66.67,
+      "acuracia_geral": 60.0,
       "total_acertos": 6,
-      "total_testes": 9
+      "total_testes": 10
     },
     "4_stride": {
       "descricao": "Classificação de ameaças segundo modelo STRIDE",
-      "acuracia_geral": 33.33,
-      "total_acertos": 3,
-      "total_erros": 6,
-      "total_testes_stride": 9,
-      "metricas_por_categoria": {
-        "Tampering": {
-          "acertos": 1,
-          "total": 6,
-          "acuracia": 16.67
-        },
-        "Spoofing": {
-          "acertos": 2,
-          "total": 3,
-          "acuracia": 66.67
-        }
-      },
-      "matriz_confusao": {
-        "Tampering": {
-          "Tampering": 1,
-          "Spoofing": 0,
-          "Repudiation": 0,
-          "Information Disclosure": 5,
-          "Denial of Service": 0,
-          "Elevation of Privilege": 0,
-          "Unknown": 0
-        },
-        "Spoofing": {
-          "Tampering": 0,
-          "Spoofing": 2,
-          "Repudiation": 0,
-          "Information Disclosure": 1,
-          "Denial of Service": 0,
-          "Elevation of Privilege": 0,
-          "Unknown": 0
-        }
-      }
+      "acuracia_geral": 0,
+      "total_acertos": 0,
+      "total_erros": 0,
+      "total_testes_stride": 0,
+      "metricas_por_categoria": {},
+      "matriz_confusao": {}
     }
   }
 }

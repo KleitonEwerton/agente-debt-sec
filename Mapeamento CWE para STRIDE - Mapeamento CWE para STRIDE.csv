@@ -1,0 +1,12 @@
+CWE ID,Nome da Vulnerabilidade,STRIDE Principal,Racional Técnico
+CWE-89,SQL Injection,Tampering / Information Disclosure,"Permite alterar a estrutura/dados do banco (T) ou exfiltrar dados sensíveis (I). Em casos de bypass de login, também afeta Elevation of Privilege."
+CWE-330,Use of Insufficiently Random Values,Spoofing / Information Disclosure,"Se usado para IDs de sessão, permite assumir a identidade de outro usuário (S). Se usado para criptografia, enfraquece a proteção de dados (I)."
+CWE-78,OS Command Injection,Elevation of Privilege / Tampering,"Permite execução de comandos arbitrários no servidor, geralmente concedendo controle total (E) ou modificação do sistema (T)."
+CWE-22,Path Traversal,Information Disclosure,"O objetivo primário é acessar arquivos fora do diretório raiz (I). Se houver permissão de escrita, torna-se Tampering."
+CWE-90,LDAP Injection,Information Disclosure / Elevation of Privilege,Manipula queries LDAP para extrair dados da árvore de diretórios (I) ou contornar autenticação (E).
+CWE-643,XPath Injection,Information Disclosure / Elevation of Privilege,"Similar ao SQLi e LDAP, permite ler dados de documentos XML (I) ou alterar lógica de autenticação (E)."
+CWE-79,Cross-site Scripting (XSS),Tampering / Elevation of Privilege,O script malicioso altera a renderização da página para a vítima (T) ou rouba cookies de sessão para assumir a conta (E/Spoofing).
+CWE-327,Use of a Broken or Risky Cryptographic Algorithm,Information Disclosure,O uso de criptografia fraca expõe a confidencialidade dos dados protegidos.
+CWE-501,Trust Boundary Violation,Elevation of Privilege / Spoofing,"Ocorre quando dados não confiáveis são aceitos como confiáveis sem validação, permitindo que usuários maliciosos escalem privilégios (E)."
+CWE-328,Reversible One-Way Hash,Information Disclosure,"Se um hash é reversível ou fraco, a confidencialidade do dado original (ex: senha) é comprometida."
+CWE-614,Sensitive Cookie in HTTPS Session Without 'Secure' Attribute,Information Disclosure,Permite que o cookie seja interceptado em conexões não criptografadas (Man-in-the-Middle).
