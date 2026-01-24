@@ -45,7 +45,6 @@ def extrair_stride_do_llm(resultado_llm):
 def calcular_metricas_por_cwe(resultados):
     """Calcula métricas detalhadas para cada CWE"""
     metricas_cwe = {}
-    metricas_verdict = {'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0}
     metricas_stride = {'acertos': 0, 'erros': 0}
     
     # Matriz de confusão STRIDE
@@ -71,56 +70,26 @@ def calcular_metricas_por_cwe(resultados):
         try:
             ground_truth = json.loads(item.get('ground_truth', '{}'))
             cwe_esperado = ground_truth.get('weakness', {}).get('id', '')
-            verdict_esperado = ground_truth.get('verdict', '')
         except:
             continue
         
         # Extrair predição LLM
         cwe_predito = resultado_llm.get('cwe_id', 'None')
-        # Inferir verdict automaticamente: se tem CWE → VULNERABLE
-        verdict_predito = "VULNERABLE" if cwe_predito != "None" else "SAFE"
         
         # Inicializar métricas por CWE se não existir
         if cwe_esperado not in metricas_cwe:
             metricas_cwe[cwe_esperado] = {
-                'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0,
                 'acertos_cwe': 0, 'total': 0
             }
         
         metricas_cwe[cwe_esperado]['total'] += 1
         
-        # === ANÁLISE 1: CWE ISOLADO ===
+        # === ANÁLISE 1: CWE DETECTION ===
         cwe_correto = (cwe_esperado == cwe_predito)
         if cwe_correto:
             metricas_cwe[cwe_esperado]['acertos_cwe'] += 1
         
-        # === ANÁLISE 2: VERDICT ISOLADO ===
-        if verdict_esperado == 'VULNERABLE' and verdict_predito == 'VULNERABLE':
-            metricas_verdict['TP'] += 1
-        elif verdict_esperado == 'SAFE' and verdict_predito == 'SAFE':
-            metricas_verdict['TN'] += 1
-        elif verdict_esperado == 'SAFE' and verdict_predito == 'VULNERABLE':
-            metricas_verdict['FP'] += 1
-        elif verdict_esperado == 'VULNERABLE' and verdict_predito == 'SAFE':
-            metricas_verdict['FN'] += 1
-        
-        # === ANÁLISE 3: CWE + VERDICT COMBINADO ===
-        acerto_combinado = (cwe_correto and verdict_esperado == verdict_predito)
-        
-        if verdict_esperado == 'VULNERABLE':
-            if acerto_combinado:
-                metricas_cwe[cwe_esperado]['TP'] += 1
-            elif verdict_predito == 'SAFE':
-                metricas_cwe[cwe_esperado]['FN'] += 1
-            else:  # CWE errado mas marcou VULNERABLE
-                metricas_cwe[cwe_esperado]['FN'] += 1
-        else:  # SAFE
-            if verdict_predito == 'SAFE':
-                metricas_cwe[cwe_esperado]['TN'] += 1
-            else:
-                metricas_cwe[cwe_esperado]['FP'] += 1
-        
-        # === ANÁLISE 4: STRIDE ===
+        # === ANÁLISE 2: STRIDE CLASSIFICATION ===
         stride_esperado = extrair_stride_do_ground_truth(item.get('ground_truth', '{}'))
         stride_predito = extrair_stride_do_llm(resultado_llm)
         
@@ -137,12 +106,12 @@ def calcular_metricas_por_cwe(resultados):
     return metricas_cwe, metricas_verdict, metricas_stride, matriz_confusao_stride, total_testes, total_erros
 
 def gerar_relatorio(resultados):
-    """Gera relatório completo com 4 análises"""
+    """Gera relatório completo com 2 análises: CWE Detection + STRIDE Classification"""
     print("=" * 80)
-    print("📊 ANÁLISE COMPLETA - RESULTADOS MELHORADOS")
+    print("📊 ANÁLISE COMPLETA - CWE DETECTION + STRIDE CLASSIFICATION")
     print("=" * 80)
     
-    metricas_cwe, metricas_verdict, metricas_stride, matriz_stride, total_testes, total_erros = calcular_metricas_por_cwe(resultados)
+    metricas_cwe, metricas_stride, matriz_stride, total_testes, total_erros = calcular_metricas_por_cwe(resultados)
     
     relatorio = {
         "resumo_geral": {
@@ -192,99 +161,10 @@ def gerar_relatorio(resultados):
     }
     
     # ========================================
-    # ANÁLISE 2: VERDICT ISOLADO
+    # ANÁLISE 2: STRIDE CLASSIFICATION
     # ========================================
     print("\n" + "=" * 80)
-    print("⚖️  ANÁLISE 2: CLASSIFICAÇÃO VULNERABLE/SAFE (Isolado)")
-    print("=" * 80)
-    print("Métrica: Capacidade de distinguir código vulnerável de código seguro")
-    print("(Ignora se identificou a CWE correta)\n")
-    
-    TP = metricas_verdict['TP']
-    TN = metricas_verdict['TN']
-    FP = metricas_verdict['FP']
-    FN = metricas_verdict['FN']
-    
-    precisao = (TP / (TP + FP) * 100) if (TP + FP) > 0 else 0
-    recall = (TP / (TP + FN) * 100) if (TP + FN) > 0 else 0
-    f1 = (2 * precisao * recall / (precisao + recall)) if (precisao + recall) > 0 else 0
-    acuracia_verdict = ((TP + TN) / total_testes * 100) if total_testes > 0 else 0
-    
-    print(f"True Positives (TP):  {TP:>3} (VULNERABLE detectado corretamente)")
-    print(f"True Negatives (TN):  {TN:>3} (SAFE detectado corretamente)")
-    print(f"False Positives (FP): {FP:>3} (SAFE marcado como VULNERABLE)")
-    print(f"False Negatives (FN): {FN:>3} (VULNERABLE marcado como SAFE)")
-    print(f"\nPrecisão: {precisao:.2f}%")
-    print(f"Recall:   {recall:.2f}%")
-    print(f"F1-Score: {f1:.2f}%")
-    print(f"Acurácia: {acuracia_verdict:.2f}%")
-    
-    relatorio["analises"]["2_verdict_isolado"] = {
-        "descricao": "Classificação VULNERABLE vs SAFE (ignorando CWE)",
-        "matriz_confusao": {
-            "TP": TP, "TN": TN, "FP": FP, "FN": FN
-        },
-        "metricas": {
-            "precisao": round(precisao, 2),
-            "recall": round(recall, 2),
-            "f1_score": round(f1, 2),
-            "acuracia": round(acuracia_verdict, 2)
-        }
-    }
-    
-    # ========================================
-    # ANÁLISE 3: CWE + VERDICT COMBINADO
-    # ========================================
-    print("\n" + "=" * 80)
-    print("🎯 ANÁLISE 3: CWE + VERDICT COMBINADO")
-    print("=" * 80)
-    print("Métrica: Acerto completo (CWE correto E veredito correto simultaneamente)\n")
-    
-    analise_combinada = {}
-    acertos_totais = 0
-    
-    for cwe, metricas in sorted(metricas_cwe.items()):
-        TP = metricas['TP']
-        TN = metricas['TN']
-        FP = metricas['FP']
-        FN = metricas['FN']
-        total_cwe = metricas['total']
-        
-        acertos = TP + TN
-        acertos_totais += acertos
-        
-        precisao = (TP / (TP + FP) * 100) if (TP + FP) > 0 else 0
-        recall = (TP / (TP + FN) * 100) if (TP + FN) > 0 else 0
-        f1 = (2 * precisao * recall / (precisao + recall)) if (precisao + recall) > 0 else 0
-        acuracia = (acertos / total_cwe * 100) if total_cwe > 0 else 0
-        
-        analise_combinada[cwe] = {
-            "TP": TP, "TN": TN, "FP": FP, "FN": FN,
-            "total": total_cwe,
-            "precisao": round(precisao, 2),
-            "recall": round(recall, 2),
-            "f1_score": round(f1, 2),
-            "acuracia": round(acuracia, 2)
-        }
-        
-        print(f"{cwe:<10} Precisão: {precisao:>6.2f}%  Recall: {recall:>6.2f}%  F1: {f1:>6.2f}%  Acurácia: {acuracia:>6.2f}%")
-    
-    acuracia_combinada_geral = (acertos_totais / total_testes * 100) if total_testes > 0 else 0
-    print(f"\n{'GERAL':<10} Acurácia: {acuracia_combinada_geral:>6.2f}% ({acertos_totais}/{total_testes})")
-    
-    relatorio["analises"]["3_combinado"] = {
-        "descricao": "CWE correto E veredito correto (métrica mais rigorosa)",
-        "metricas_por_cwe": analise_combinada,
-        "acuracia_geral": round(acuracia_combinada_geral, 2),
-        "total_acertos": acertos_totais,
-        "total_testes": total_testes
-    }
-    
-    # ========================================
-    # ANÁLISE 4: STRIDE
-    # ========================================
-    print("\n" + "=" * 80)
-    print("🛡️  ANÁLISE 4: CLASSIFICAÇÃO STRIDE")
+    print("🛡️  ANÁLISE 2: CLASSIFICAÇÃO STRIDE")
     print("=" * 80)
     print("Métrica: Capacidade de mapear vulnerabilidades para categorias STRIDE\n")
     
@@ -328,7 +208,7 @@ def gerar_relatorio(resultados):
     for real, pred, count in confusoes_sorted:
         print(f"  {real} → {pred}: {count} casos")
     
-    relatorio["analises"]["4_stride"] = {
+    relatorio["analises"]["2_stride"] = {
         "descricao": "Classificação de ameaças segundo modelo STRIDE",
         "acuracia_geral": round(acuracia_stride, 2),
         "total_acertos": metricas_stride['acertos'],

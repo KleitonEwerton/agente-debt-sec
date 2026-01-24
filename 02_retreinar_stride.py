@@ -41,12 +41,17 @@ TARGET CODE FOR ANALYSIS:
 ---
 
 Response Instructions:
-1. Identify the CWE pattern in the code (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643).
-2. If NO vulnerability pattern is detected, return "None" for cwe_id.
-3. Briefly explain the security pattern found and its relation to Security Debt.
-4. Classify according to STRIDE threat model (see detailed guidance below).
+1. Identify if code contains a CWE weakness PATTERN (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643).
+2. If no weakness pattern detected, return "None" for cwe_id.
+3. Briefly explain your decision.
+4. If weakness detected, classify according to STRIDE threat model.
 
-IMPORTANT: Focus on PATTERN DETECTION, not exploitability. Even mitigated code may contain CWE patterns.
+IMPORTANT: Focus on PATTERN DETECTION, not exploitability:
+- SQL Injection pattern: User input concatenated in SQL query (even if using prepareCall)
+- XSS pattern: User input reflected in HTML/JavaScript output
+- Command Injection pattern: User input used in Runtime.exec() or ProcessBuilder
+- Path Traversal pattern: User input used to construct file paths
+- Weak Crypto pattern: MD5, SHA1, DES, RC4, or other deprecated algorithms
 
 ===== CWE CLASSIFICATION GUIDE =====
 - CWE-327/328: Weak cryptography (MD5, SHA1, DES, RC4, weak AES configurations)
@@ -128,7 +133,7 @@ Respond strictly in JSON format:
   "stride": "Tampering" | "Spoofing" | "Repudiation" | "Information Disclosure" | "Denial of Service" | "Elevation of Privilege" | "None"
 }}
 
-Note: Return "None" for stride only if cwe_id is "None".
+Note: If no weakness pattern detected, then cwe_id="None" and stride="None".
 """
 
 def retreinar_stride():

@@ -134,11 +134,11 @@ def main():
                 
                 # STRIDE NÃO é incluído no dataset (LLM infere via prompt)
                 # Isso economiza tokens e evita "ensinar" mapeamentos incorretos
+                # VERDICT removido: foco em detecção de padrões CWE, não em exploitabilidade
                 entry = {
-                    "instruction": f"Analyze the provided Java code snippet. Detect if it contains a Security Debt item (Vulnerability). If vulnerable, identify the CWE and potential CAPEC attack patterns.",
+                    "instruction": f"Analyze the provided Java code snippet. Identify if it contains a CWE weakness pattern and classify according to STRIDE threat model.",
                     "input": clean_code(raw_code),
                     "output": json.dumps({
-                        "verdict": "VULNERABLE" if is_vuln else "SAFE",
                         "weakness": {
                             "id": cwe_key,
                             "name": cwe_info['name'],
