@@ -41,10 +41,12 @@ TARGET CODE FOR ANALYSIS:
 ---
 
 Response Instructions:
-1. Identify if the code is VULNERABLE or SAFE.
-2. If vulnerable, specify the most likely CWE ID exclusively from these CWEs (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643);
-3. Briefly explain the flaw and associate it with the concept of Security Debt.
-4. Classify the vulnerability according to STRIDE threat model (see detailed guidance below).
+1. Identify the CWE pattern in the code (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643).
+2. If NO vulnerability pattern is detected, return "None" for cwe_id.
+3. Briefly explain the security pattern found and its relation to Security Debt.
+4. Classify according to STRIDE threat model (see detailed guidance below).
+
+IMPORTANT: Focus on PATTERN DETECTION, not exploitability. Even mitigated code may contain CWE patterns.
 
 ===== CWE CLASSIFICATION GUIDE =====
 - CWE-327/328: Weak cryptography (MD5, SHA1, DES, RC4, weak AES configurations)
@@ -121,11 +123,12 @@ COMMON MAPPINGS:
 
 Respond strictly in JSON format:
 {{
-  "verdict": "VULNERABLE" | "SAFE",
   "cwe_id": "CWE-XXX" | "None",
   "explanation": "Explanatory text...",
-  "stride": "Tampering" | "Spoofing" | "Repudiation" | "Information Disclosure" | "Denial of Service" | "Elevation of Privilege"
+  "stride": "Tampering" | "Spoofing" | "Repudiation" | "Information Disclosure" | "Denial of Service" | "Elevation of Privilege" | "None"
 }}
+
+Note: Return "None" for stride only if cwe_id is "None".
 """
 
 def retreinar_stride():

@@ -25,7 +25,11 @@ CWE_TO_STRIDE_CORRETO = {
 ARQUIVO_RESULTADOS = "resultados_teste_stride_melhorado.json"
 
 def analisar_com_mapeamento_correto():
-    """Analisa STRIDE comparando com mapeamento correto, não com ground truth"""
+    """Analisa STRIDE comparando com mapeamento correto, não com ground truth
+    
+    NOTA: Verdict não é mais retornado pelo LLM.
+    Foco da pesquisa: Detecção de padrões CWE + Classificação STRIDE.
+    """
     
     print("=" * 80)
     print("📊 ANÁLISE STRIDE - USANDO MAPEAMENTO CORRETO COMO REFERÊNCIA")

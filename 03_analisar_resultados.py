@@ -77,7 +77,8 @@ def calcular_metricas_por_cwe(resultados):
         
         # Extrair predição LLM
         cwe_predito = resultado_llm.get('cwe_id', 'None')
-        verdict_predito = resultado_llm.get('verdict', '')
+        # Inferir verdict automaticamente: se tem CWE → VULNERABLE
+        verdict_predito = "VULNERABLE" if cwe_predito != "None" else "SAFE"
         
         # Inicializar métricas por CWE se não existir
         if cwe_esperado not in metricas_cwe:
