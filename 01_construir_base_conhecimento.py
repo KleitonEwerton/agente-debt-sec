@@ -18,6 +18,21 @@ CAMINHO_DB = "vectorstore_db"
 MODELO_EMBEDDING = "sentence-transformers/all-MiniLM-L6-v2"
 PERCENTUAL_TESTE = 0.20
 
+# Mapeamento CWE → STRIDE para casos com "Unknown"
+CWE_TO_STRIDE = {
+    "CWE-22": ["Information Disclosure"],  # Path Traversal expõe arquivos
+    "CWE-78": ["Tampering"],               # Command Injection modifica sistema
+    "CWE-79": ["Tampering"],               # XSS modifica página web
+    "CWE-89": ["Tampering"],               # SQL Injection modifica dados
+    "CWE-90": ["Tampering"],               # LDAP Injection modifica consultas
+    "CWE-327": ["Spoofing"],               # Broken Crypto afeta autenticação
+    "CWE-328": ["Spoofing"],               # Weak Hash afeta autenticação
+    "CWE-330": ["Spoofing"],               # Weak Random afeta tokens/sessions
+    "CWE-501": ["Tampering"],              # Trust Boundary mistura dados
+    "CWE-614": ["Information Disclosure"], # Sensitive Cookie expõe informação
+    "CWE-643": ["Tampering"],              # XPath Injection modifica consultas
+}
+
 def carregar_e_splitar_dados():
 	print(f"--- 📂 Carregando Dataset: {ARQUIVO_ENTRADA} ---")
 	
@@ -57,6 +72,8 @@ def carregar_e_splitar_dados():
 def transformar_em_documentos(dados_json):
 	"""Converte o JSON bruto em objetos Document do LangChain"""
 	docs = []
+	casos_mapeados = 0
+	
 	for item in dados_json:
 		# CORREÇÃO DO ERRO AQUI:
 		# O campo 'output' vem como String (devido ao json.dumps na geração).
@@ -75,6 +92,19 @@ def transformar_em_documentos(dados_json):
 		try:
 			cwe_id = output_data['weakness']['id']
 			verdict = output_data['verdict']
+			
+			# NOVO: Mapear STRIDE Unknown para categoria correta
+			threat_model = output_data.get('threat_model', {})
+			stride_categories = threat_model.get('stride_categories', [])
+			
+			# Se STRIDE é Unknown, mapear baseado na CWE
+			if "Unknown" in stride_categories and cwe_id in CWE_TO_STRIDE:
+				stride_categories = CWE_TO_STRIDE[cwe_id]
+				casos_mapeados += 1
+				# Atualizar o output_data com STRIDE mapeado
+				threat_model['stride_categories'] = stride_categories
+				output_data['threat_model'] = threat_model
+			
 		except KeyError:
 			cwe_id = "Unknown"
 			verdict = "Unknown"
@@ -84,7 +114,7 @@ def transformar_em_documentos(dados_json):
 		CODE SNIPPET:
 		{item.get('input', '')}
 		ANALYSIS (Ground Truth):
-		{item.get('output', '')} 
+		{json.dumps(output_data, ensure_ascii=False, indent=2)} 
 		"""
 		
 		metadata = {
@@ -95,6 +125,7 @@ def transformar_em_documentos(dados_json):
 		
 		docs.append(Document(page_content=conteudo_vetor, metadata=metadata))
 	
+	print(f"🗺️  Casos com STRIDE mapeado de Unknown → Válido: {casos_mapeados}")
 	return docs
 
 def criar_vectorstore():
