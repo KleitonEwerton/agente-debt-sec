@@ -18,100 +18,60 @@ ARQUIVO_RESULTADOS_NOVO = "resultados_teste_stride_melhorado.json"
 ARQUIVO_RESULTADOS_ANTIGO = "resultados_teste.json"
 
 # Rate Limiting
-PAUSA_ENTRE_REQUISICOES = 4  # segundos
+PAUSA_ENTRE_REQUISICOES = 2  # segundos
 REQUISICOES_POR_LOTE = 5
-PAUSA_LOTE = 20
+PAUSA_LOTE = 15
 
 logging.basicConfig(filename='retreino_stride_log.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Prompt melhorado com guia STRIDE detalhado
+# Prompt melhorado com Foco em CWE + Contexto STRIDE
 prompt_template_security = """
-You are a Software Security and Static Analysis (SAST) Expert.
-Your task is to analyze the provided Java code for Technical Security Debt.
+You are a Software Security Expert. Analyze the Java code for CWE patterns and STRIDE threats.
 
-Use the retrieved context (similar examples from the dataset) to guide your decision.
-
-RETRIEVED CONTEXT (Known similar cases):
+Reference Context (Use carefully, but prioritize the Explicit Patterns below):
 {base_conhecimento}
 
 ---
-TARGET CODE FOR ANALYSIS:
+TARGET CODE:
 {codigo_alvo}
 ---
 
-Response Instructions:
-1. Identify if code contains a CWE weakness PATTERN (22, 78, 79, 89, 90, 327, 328, 330, 501, 614, or 643).
-2. If no weakness pattern detected, return "None" for cwe_id.
-3. Briefly explain your decision.
-4. If weakness detected, classify according to STRIDE threat model.
+===== 1. CWE PATTERN DEFINITIONS (Primary Goal) =====
+Look strictly for these syntax patterns. If none match, return CWE: "None".
 
-IMPORTANT: Focus on PATTERN DETECTION, not exploitability:
-- SQL Injection pattern: User input concatenated in SQL query (even if using prepareCall)
-- XSS pattern: User input reflected in HTML/JavaScript output
-- Command Injection pattern: User input used in Runtime.exec() or ProcessBuilder
-- Path Traversal pattern: User input used to construct file paths
-- Weak Crypto pattern: MD5, SHA1, DES, RC4, or other deprecated algorithms
+- CWE-89 (SQL Injection): Unsanitized input concatenated into SQL (e.g., "SELECT..." + var).
+- CWE-79 (XSS): Unsanitized input reflected in HTML/JSP/JS output.
+- CWE-78 (Command Injection): User input in Runtime.exec(), ProcessBuilder.
+- CWE-22 (Path Traversal): User input used to construct File/Path.
+- CWE-327/328 (Weak Crypto): Usage of MD5, SHA1, DES, RC4, or "AES" without mode details.
+- CWE-330 (Weak Random): Math.random() or java.util.Random for security critical contexts.
+- CWE-90 (LDAP Injection): Unsanitized input in search filters.
+- CWE-501 (Trust Boundary): Session attributes set with untrusted input.
+- CWE-614 (Insecure Cookie): Cookie.setSecure(false) or missing HttpOnly.
+- CWE-643 (XPath Injection): Unsanitized input in XPath expression.
 
-===== CWE CLASSIFICATION GUIDE =====
-- CWE-327/328: Weak cryptography (MD5, SHA1, DES, RC4, weak AES configurations)
-- CWE-89: SQL Injection (unsanitized input in SQL queries)
-- CWE-79: Cross-Site Scripting/XSS (unsanitized input reflected in HTML/JavaScript)
-- CWE-78: OS Command Injection (user input executed as shell commands)
-- CWE-22: Path Traversal (file paths constructed from user input)
-- CWE-90: LDAP Injection (unsanitized input in LDAP queries)
-- CWE-330: Weak Random Number Generation (Math.random(), predictable seeds)
-- CWE-501: Trust Boundary Violation (untrusted data treated as trusted)
-- CWE-614: Insecure Cookie (sensitive cookies without Secure/HttpOnly flags)
-- CWE-643: XPath Injection (unsanitized input in XPath queries)
+===== 2. STRIDE LOGIC RULES (Secondary Goal) =====
+Once a CWE is found, determine the specific threat based on the OPERATION:
 
-===== STRIDE CLASSIFICATION GUIDE =====
-Choose ONE category by analyzing operation type:
+Rule A: Analyze the Operation Verb
+- INSERT, UPDATE, DELETE, MODIFY file -> Write Context
+- SELECT, READ file, GET data -> Read Context
+- EXECUTE process, RUN system command -> Execute Context
 
-**Tampering** (WRITE/MODIFY operations):
-- SQL: INSERT/UPDATE/DELETE with user input
-- Command injection modifying files/system
-- Path traversal WRITING files
+Rule B: Map to STRIDE
+- IF Write Context (e.g., SQL INSERT) -> **Tampering**
+- IF Read Context (e.g., SQL SELECT) -> **Information Disclosure**
+- IF Execute Context as Root/Admin -> **Elevation of Privilege**
+- IF Authentication Context (Passwords/Hashes/Cookies) -> **Spoofing**
 
-**Information Disclosure** (READ operations):
-- SQL: SELECT with user input
-- Path traversal READING files
-- XSS stealing cookies
-- Weak crypto for stored data
-
-**Spoofing** (AUTHENTICATION context):
-- Weak crypto for passwords (MD5, SHA1)
-- Weak random for session tokens
-- Insecure auth cookies
-
-**Elevation of Privilege** (PRIVILEGE context):
-- Command injection as root/admin
-- SQL bypassing access controls
-- Path traversal accessing system files
-
-**Repudiation**: Log manipulation
-**Denial of Service**: Resource exhaustion
-
-Decision hierarchy:
-1. AUTH + weak crypto/random → Spoofing
-2. Root/admin execution → Elevation of Privilege
-3. WRITE/MODIFY → Tampering
-4. READ sensitive → Information Disclosure
-
-Key examples:
-- SELECT query → Information Disclosure
-- INSERT/UPDATE/DELETE → Tampering
-- Runtime.exec() as root → Elevation of Privilege
-- MD5 password hash → Spoofing
-
+===== RESPONSE FORMAT =====
 Respond strictly in JSON format:
 {{
   "cwe_id": "CWE-XXX" | "None",
-  "explanation": "Explanatory text...",
+  "explanation": "1. Pattern: Detected [CWE Name] in variable 'x'. 2. Context: The code performs a [INSERT/SELECT/EXEC] operation. 3. Threat: Since it is a [Write/Read] operation, the STRIDE is [Category].",
   "stride": "Tampering" | "Spoofing" | "Repudiation" | "Information Disclosure" | "Denial of Service" | "Elevation of Privilege" | "None"
 }}
-
-Note: If no weakness pattern detected, then cwe_id="None" and stride="None".
 """
 
 def retreinar_stride():

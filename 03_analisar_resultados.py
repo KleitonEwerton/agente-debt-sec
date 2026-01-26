@@ -55,18 +55,14 @@ def extrair_stride_do_llm(resultado_llm):
     return 'Unknown'
 
 def calcular_metricas_por_cwe(resultados):
-    """Calcula métricas detalhadas para cada CWE"""
+    """Calcula métricas detalhadas para cada CWE + distribuição STRIDE"""
     metricas_cwe = {}
-    metricas_stride = {'acertos': 0, 'erros': 0}
-    
-    # Matriz de confusão STRIDE
-    stride_categories = ['Tampering', 'Spoofing', 'Repudiation', 'Information Disclosure', 
-                         'Denial of Service', 'Elevation of Privilege']
-    matriz_confusao_stride = {cat: {cat2: 0 for cat2 in stride_categories + ['Unknown']} 
-                               for cat in stride_categories + ['Unknown']}
+    distribuicao_stride = defaultdict(int)  # Contagem simples de cada STRIDE
+    distribuicao_stride_por_cwe = defaultdict(lambda: defaultdict(int))  # CWE → STRIDE → count
     
     total_testes = 0
     total_erros = 0
+    total_com_stride = 0
     
     for item in resultados:
         resultado_llm = item.get('resultado_llm', {})
@@ -101,36 +97,23 @@ def calcular_metricas_por_cwe(resultados):
         if cwe_correto:
             metricas_cwe[cwe_esperado]['acertos_cwe'] += 1
         
-        # === ANÁLISE 2: STRIDE CLASSIFICATION ===
-        stride_esperado_list = extrair_stride_esperado_do_cwe(cwe_esperado)
+        # === ANÁLISE 2: STRIDE DISTRIBUTION (não há "acerto/erro" porque CWE tem múltiplos STRIDE válidos) ===
         stride_predito = extrair_stride_do_llm(resultado_llm)
         
-        # Pular casos sem mapeamento STRIDE
-        if stride_esperado_list == ['Unknown']:
-            continue
-        
-        # Aceitar qualquer STRIDE válido do mapeamento (múltiplos possíveis)
-        if stride_predito in stride_esperado_list:
-            metricas_stride['acertos'] += 1
-        else:
-            metricas_stride['erros'] += 1
-        
-        # Atualizar matriz de confusão (usar primeiro STRIDE como principal)
-        stride_esperado_principal = stride_esperado_list[0]
-        if stride_esperado_principal not in matriz_confusao_stride:
-            matriz_confusao_stride[stride_esperado_principal] = {cat: 0 for cat in stride_categories + ['Unknown']}
-        
-        matriz_confusao_stride[stride_esperado_principal][stride_predito] += 1
+        if stride_predito and stride_predito != 'Unknown' and stride_predito != 'None':
+            distribuicao_stride[stride_predito] += 1
+            distribuicao_stride_por_cwe[cwe_esperado][stride_predito] += 1
+            total_com_stride += 1
     
-    return metricas_cwe, metricas_stride, matriz_confusao_stride, total_testes, total_erros
+    return metricas_cwe, distribuicao_stride, distribuicao_stride_por_cwe, total_testes, total_erros, total_com_stride
 
 def gerar_relatorio(resultados):
-    """Gera relatório completo com 2 análises: CWE Detection + STRIDE Classification"""
+    """Gera relatório com 2 análises: CWE Detection + STRIDE Distribution"""
     print("=" * 80)
-    print("📊 ANÁLISE COMPLETA - CWE DETECTION + STRIDE CLASSIFICATION")
+    print("📊 ANÁLISE COMPLETA - CWE DETECTION + STRIDE DISTRIBUTION")
     print("=" * 80)
     
-    metricas_cwe, metricas_stride, matriz_stride, total_testes, total_erros = calcular_metricas_por_cwe(resultados)
+    metricas_cwe, dist_stride, dist_stride_por_cwe, total_testes, total_erros, total_com_stride = calcular_metricas_por_cwe(resultados)
     
     relatorio = {
         "resumo_geral": {
@@ -180,61 +163,39 @@ def gerar_relatorio(resultados):
     }
     
     # ========================================
-    # ANÁLISE 2: STRIDE CLASSIFICATION
+    # ANÁLISE 2: STRIDE DISTRIBUTION
     # ========================================
     print("\n" + "=" * 80)
-    print("🛡️  ANÁLISE 2: CLASSIFICAÇÃO STRIDE")
+    print("🛡️  ANÁLISE 2: DISTRIBUIÇÃO STRIDE")
     print("=" * 80)
-    print("Métrica: Capacidade de mapear vulnerabilidades para categorias STRIDE\n")
+    print("Métrica: Cobertura e distribuição das categorias STRIDE")
+    print("NOTA: Não há 'acerto/erro' pois cada CWE pode ter múltiplos STRIDE válidos\n")
     
-    total_stride = metricas_stride['acertos'] + metricas_stride['erros']
-    acuracia_stride = (metricas_stride['acertos'] / total_stride * 100) if total_stride > 0 else 0
+    cobertura_stride = (total_com_stride / total_testes * 100) if total_testes > 0 else 0
+    print(f"Cobertura: {total_com_stride}/{total_testes} = {cobertura_stride:.2f}%")
+    print(f"(Percentual de casos que receberam classificação STRIDE)\n")
     
-    print(f"Acertos: {metricas_stride['acertos']}")
-    print(f"Erros:   {metricas_stride['erros']}")
-    print(f"Total:   {total_stride}")
-    print(f"Acurácia: {acuracia_stride:.2f}%")
+    print("--- Distribuição por Categoria STRIDE ---")
+    stride_ordenado = sorted(dist_stride.items(), key=lambda x: x[1], reverse=True)
     
-    # Métricas por categoria STRIDE
-    print("\n--- Desempenho por Categoria STRIDE ---")
-    stride_por_categoria = {}
+    for categoria, quantidade in stride_ordenado:
+        percentual = (quantidade / total_com_stride * 100) if total_com_stride > 0 else 0
+        print(f"  {categoria:<30} {quantidade:>3} ({percentual:>5.2f}%)")
     
-    stride_categories = ['Tampering', 'Spoofing', 'Repudiation', 'Information Disclosure', 
-                         'Denial of Service', 'Elevation of Privilege']
+    print("\n--- Distribuição STRIDE por CWE ---")
+    print("(Mostra quais STRIDE o LLM escolheu para cada tipo de CWE)\n")
+    for cwe in sorted(dist_stride_por_cwe.keys()):
+        print(f"{cwe}:")
+        for stride_cat, count in sorted(dist_stride_por_cwe[cwe].items(), key=lambda x: x[1], reverse=True):
+            print(f"  {stride_cat:<30} {count:>3}")
     
-    for cat in stride_categories:
-        total_cat = sum(matriz_stride[cat].values())
-        if total_cat > 0:
-            acertos_cat = matriz_stride[cat][cat]
-            acc = (acertos_cat / total_cat * 100)
-            stride_por_categoria[cat] = {
-                "acertos": acertos_cat,
-                "total": total_cat,
-                "acuracia": round(acc, 2)
-            }
-            print(f"  {cat:<30} {acertos_cat:>3}/{total_cat:<3} = {acc:>6.2f}%")
-    
-    # Matriz de confusão resumida
-    print("\n--- Principais Confusões ---")
-    confusoes = []
-    for stride_real in stride_categories:
-        for stride_pred in stride_categories:
-            if stride_real != stride_pred and matriz_stride[stride_real][stride_pred] > 0:
-                count = matriz_stride[stride_real][stride_pred]
-                confusoes.append((stride_real, stride_pred, count))
-    
-    confusoes_sorted = sorted(confusoes, key=lambda x: x[2], reverse=True)[:5]
-    for real, pred, count in confusoes_sorted:
-        print(f"  {real} → {pred}: {count} casos")
-    
-    relatorio["analises"]["2_stride"] = {
-        "descricao": "Classificação de ameaças segundo modelo STRIDE",
-        "acuracia_geral": round(acuracia_stride, 2),
-        "total_acertos": metricas_stride['acertos'],
-        "total_erros": metricas_stride['erros'],
-        "total_testes_stride": total_stride,
-        "metricas_por_categoria": stride_por_categoria,
-        "matriz_confusao": {k: dict(v) for k, v in matriz_stride.items() if sum(v.values()) > 0}
+    relatorio["analises"]["2_stride_distribution"] = {
+        "descricao": "Distribuição de classificações STRIDE (sem acurácia, pois CWE tem múltiplos STRIDE válidos)",
+        "cobertura_percentual": round(cobertura_stride, 2),
+        "total_classificados": total_com_stride,
+        "total_testes": total_testes,
+        "distribuicao_geral": {k: v for k, v in stride_ordenado},
+        "distribuicao_por_cwe": {k: dict(v) for k, v in dist_stride_por_cwe.items()}
     }
     
     # Salvar relatório
