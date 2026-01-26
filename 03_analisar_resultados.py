@@ -155,7 +155,7 @@ def gerar_relatorio(resultados):
     print(f"\n{'GERAL':<10} {acertos_cwe_total:>3}/{total_testes:<3} = {acuracia_cwe_geral:>6.2f}%")
     
     relatorio["analises"]["1_cwe_isolado"] = {
-        "descricao": "Reconhecimento do tipo de CWE (ignorando veredito)",
+        "descricao": "Reconhecimento do tipo de CWE",
         "metricas_por_cwe": analise_cwe,
         "acuracia_geral": round(acuracia_cwe_geral, 2),
         "total_acertos": acertos_cwe_total,
@@ -190,7 +190,7 @@ def gerar_relatorio(resultados):
             print(f"  {stride_cat:<30} {count:>3}")
     
     relatorio["analises"]["2_stride_distribution"] = {
-        "descricao": "Distribuição de classificações STRIDE (sem acurácia, pois CWE tem múltiplos STRIDE válidos)",
+        "descricao": "Distribuição de classificações STRIDE",
         "cobertura_percentual": round(cobertura_stride, 2),
         "total_classificados": total_com_stride,
         "total_testes": total_testes,

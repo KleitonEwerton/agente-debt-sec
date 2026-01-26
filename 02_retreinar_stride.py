@@ -37,19 +37,32 @@ TARGET CODE:
 {codigo_alvo}
 ---
 
-===== 1. CWE PATTERN DEFINITIONS (Primary Goal) =====
-Look strictly for these syntax patterns. If none match, return CWE: "None".
+===== 1. CWE PATTERN DEFINITIONS (Strict Syntax Matching) =====
 
-- CWE-89 (SQL Injection): Unsanitized input concatenated into SQL (e.g., "SELECT..." + var).
-- CWE-79 (XSS): Unsanitized input reflected in HTML/JSP/JS output.
-- CWE-78 (Command Injection): User input in Runtime.exec(), ProcessBuilder.
-- CWE-22 (Path Traversal): User input used to construct File/Path.
-- CWE-327/328 (Weak Crypto): Usage of MD5, SHA1, DES, RC4, or "AES" without mode details.
-- CWE-330 (Weak Random): Math.random() or java.util.Random for security critical contexts.
-- CWE-90 (LDAP Injection): Unsanitized input in search filters.
-- CWE-501 (Trust Boundary): Session attributes set with untrusted input.
-- CWE-614 (Insecure Cookie): Cookie.setSecure(false) or missing HttpOnly.
-- CWE-643 (XPath Injection): Unsanitized input in XPath expression.
+PRIORITY RULES (Apply in order):
+
+1. **CWE-328 (Weak Hash) vs CWE-327 (Broken Crypto)**:
+   - IF code uses `MD5`, `MD4`, `SHA1`, or `MessageDigest` -> Classify as **CWE-328**.
+   - IF code uses `DES`, `RC2`, `RC4`, `Blowfish`, or `Cipher.getInstance` with weak mode -> Classify as **CWE-327**.
+
+2. **CWE-501 (Trust Boundary Violation)**:
+   - LOOK FOR: `session.setAttribute(key, value)` where `value` comes from `request.getParameter()` or user input.
+   - TRIGGER: Mixing untrusted input directly into HTTP Session.
+
+3. **CWE-614 (Insecure Cookie)**:
+   - LOOK FOR: `new Cookie(...)` followed by `response.addCookie(...)`.
+   - TRIGGER: If `setSecure(true)` or `setHttpOnly(true)` is MISSING.
+
+4. **Standard Injections (Maintain current logic)**:
+   - CWE-89: SQL construction with concatenation (`+`).
+   - CWE-79: Outputting input to JSP/HTML.
+   - CWE-78: `Runtime.exec` or `ProcessBuilder`.
+   - CWE-22: File access with input.
+   - CWE-90: LDAP filter construction.
+   - CWE-643: XPath expression construction.
+   - CWE-330: `Math.random()` or `java.util.Random` in security context.
+
+If NO pattern matches, return CWE: "None".
 
 ===== 2. STRIDE LOGIC RULES (Secondary Goal) =====
 Once a CWE is found, determine the specific threat based on the OPERATION:
