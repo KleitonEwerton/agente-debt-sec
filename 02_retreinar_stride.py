@@ -18,9 +18,9 @@ ARQUIVO_RESULTADOS_NOVO = "resultados_teste_stride_melhorado.json"
 ARQUIVO_RESULTADOS_ANTIGO = "resultados_teste.json"
 
 # Rate Limiting
-PAUSA_ENTRE_REQUISICOES = 2
+PAUSA_ENTRE_REQUISICOES = 4  # segundos
 REQUISICOES_POR_LOTE = 5
-PAUSA_LOTE = 15
+PAUSA_LOTE = 20
 
 logging.basicConfig(filename='retreino_stride_log.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -177,7 +177,7 @@ def retreinar_stride():
         
         try:
             # Buscar contexto RAG
-            resultados_busca = db.similarity_search(codigo, k=1)
+            resultados_busca = db.similarity_search(codigo, k=3)
             contexto_str = ""
             for doc in resultados_busca:
                 contexto_str += f"\n---\nExemplo Similar:\n{doc.page_content[:500]}...\n"

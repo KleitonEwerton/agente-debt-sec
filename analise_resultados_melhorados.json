@@ -1,0 +1,139 @@
+{
+  "resumo_geral": {
+    "total_testes": 548,
+    "testes_validos": 546,
+    "erros": 2
+  },
+  "analises": {
+    "1_cwe_isolado": {
+      "descricao": "Reconhecimento do tipo de CWE (ignorando veredito)",
+      "metricas_por_cwe": {
+        "CWE-22": {
+          "acertos": 42,
+          "total": 42,
+          "acuracia": 100.0
+        },
+        "CWE-327": {
+          "acertos": 43,
+          "total": 43,
+          "acuracia": 100.0
+        },
+        "CWE-328": {
+          "acertos": 0,
+          "total": 47,
+          "acuracia": 0.0
+        },
+        "CWE-330": {
+          "acertos": 77,
+          "total": 96,
+          "acuracia": 80.21
+        },
+        "CWE-501": {
+          "acertos": 3,
+          "total": 29,
+          "acuracia": 10.34
+        },
+        "CWE-614": {
+          "acertos": 1,
+          "total": 13,
+          "acuracia": 7.69
+        },
+        "CWE-643": {
+          "acertos": 4,
+          "total": 4,
+          "acuracia": 100.0
+        },
+        "CWE-78": {
+          "acertos": 40,
+          "total": 40,
+          "acuracia": 100.0
+        },
+        "CWE-79": {
+          "acertos": 111,
+          "total": 111,
+          "acuracia": 100.0
+        },
+        "CWE-89": {
+          "acertos": 109,
+          "total": 109,
+          "acuracia": 100.0
+        },
+        "CWE-90": {
+          "acertos": 12,
+          "total": 12,
+          "acuracia": 100.0
+        }
+      },
+      "acuracia_geral": 80.95,
+      "total_acertos": 442,
+      "total_testes": 546
+    },
+    "2_stride": {
+      "descricao": "Classificação de ameaças segundo modelo STRIDE",
+      "acuracia_geral": 82.78,
+      "total_acertos": 452,
+      "total_erros": 94,
+      "total_testes_stride": 546,
+      "metricas_por_categoria": {
+        "Tampering": {
+          "acertos": 9,
+          "total": 220,
+          "acuracia": 4.09
+        },
+        "Spoofing": {
+          "acertos": 95,
+          "total": 96,
+          "acuracia": 98.96
+        },
+        "Information Disclosure": {
+          "acertos": 85,
+          "total": 161,
+          "acuracia": 52.8
+        },
+        "Elevation of Privilege": {
+          "acertos": 3,
+          "total": 69,
+          "acuracia": 4.35
+        }
+      },
+      "matriz_confusao": {
+        "Tampering": {
+          "Tampering": 9,
+          "Spoofing": 0,
+          "Repudiation": 0,
+          "Information Disclosure": 211,
+          "Denial of Service": 0,
+          "Elevation of Privilege": 0,
+          "Unknown": 0
+        },
+        "Spoofing": {
+          "Tampering": 0,
+          "Spoofing": 95,
+          "Repudiation": 0,
+          "Information Disclosure": 1,
+          "Denial of Service": 0,
+          "Elevation of Privilege": 0,
+          "Unknown": 0
+        },
+        "Information Disclosure": {
+          "Tampering": 65,
+          "Spoofing": 11,
+          "Repudiation": 0,
+          "Information Disclosure": 85,
+          "Denial of Service": 0,
+          "Elevation of Privilege": 0,
+          "Unknown": 0
+        },
+        "Elevation of Privilege": {
+          "Tampering": 40,
+          "Spoofing": 0,
+          "Repudiation": 0,
+          "Information Disclosure": 26,
+          "Denial of Service": 0,
+          "Elevation of Privilege": 3,
+          "Unknown": 0
+        }
+      }
+    }
+  }
+}
