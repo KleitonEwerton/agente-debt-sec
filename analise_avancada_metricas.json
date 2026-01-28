@@ -1,0 +1,641 @@
+{
+  "resumo": {
+    "total_testes": 548,
+    "casos_validos": 466,
+    "total_erros_llm": 82
+  },
+  "matriz_confusao": {
+    "matriz": [
+      [
+        38,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        41,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        44,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        43,
+        13,
+        28,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        25,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        58,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        109,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        12
+      ]
+    ],
+    "classes": [
+      "CWE-22",
+      "CWE-327",
+      "CWE-328",
+      "CWE-330",
+      "CWE-501",
+      "CWE-614",
+      "CWE-643",
+      "CWE-78",
+      "CWE-79",
+      "CWE-89",
+      "CWE-90"
+    ],
+    "class_to_idx": {
+      "CWE-22": 0,
+      "CWE-327": 1,
+      "CWE-328": 2,
+      "CWE-330": 3,
+      "CWE-501": 4,
+      "CWE-614": 5,
+      "CWE-643": 6,
+      "CWE-78": 7,
+      "CWE-79": 8,
+      "CWE-89": 9,
+      "CWE-90": 10
+    }
+  },
+  "metricas_por_classe": {
+    "CWE-22": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 38,
+      "tp": 38,
+      "fp": 0,
+      "fn": 0,
+      "tn": 428
+    },
+    "CWE-327": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 41,
+      "tp": 41,
+      "fp": 0,
+      "fn": 0,
+      "tn": 425
+    },
+    "CWE-328": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 44,
+      "tp": 44,
+      "fp": 0,
+      "fn": 0,
+      "tn": 422
+    },
+    "CWE-330": {
+      "precision": 1.0,
+      "recall": 0.5119,
+      "f1_score": 0.6772,
+      "specificity": 1.0,
+      "support": 84,
+      "tp": 43,
+      "fp": 0,
+      "fn": 41,
+      "tn": 382
+    },
+    "CWE-501": {
+      "precision": 0.6579,
+      "recall": 0.9615,
+      "f1_score": 0.7812,
+      "specificity": 0.9705,
+      "support": 26,
+      "tp": 25,
+      "fp": 13,
+      "fn": 1,
+      "tn": 427
+    },
+    "CWE-614": {
+      "precision": 0.2564,
+      "recall": 1.0,
+      "f1_score": 0.4082,
+      "specificity": 0.9364,
+      "support": 10,
+      "tp": 10,
+      "fp": 29,
+      "fn": 0,
+      "tn": 427
+    },
+    "CWE-643": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 4,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "tn": 462
+    },
+    "CWE-78": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 40,
+      "tp": 40,
+      "fp": 0,
+      "fn": 0,
+      "tn": 426
+    },
+    "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 58,
+      "tp": 58,
+      "fp": 0,
+      "fn": 0,
+      "tn": 408
+    },
+    "CWE-89": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 109,
+      "tp": 109,
+      "fp": 0,
+      "fn": 0,
+      "tn": 357
+    },
+    "CWE-90": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "specificity": 1.0,
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "tn": 454
+    }
+  },
+  "metricas_globais": {
+    "acuracia": 0.9099,
+    "macro_avg": {
+      "precision": 0.9013,
+      "recall": 0.9521,
+      "f1_score": 0.897
+    },
+    "micro_avg": {
+      "precision": 0.9099,
+      "recall": 0.9099,
+      "f1_score": 0.9099
+    },
+    "weighted_avg": {
+      "precision": 0.965,
+      "recall": 0.9099,
+      "f1_score": 0.9169
+    },
+    "total_samples": 466
+  },
+  "analise_erros": {
+    "total_erros": 42,
+    "taxa_erro": 9.01,
+    "top_10_confusoes": [
+      {
+        "esperado": "CWE-330",
+        "predito": "CWE-614",
+        "quantidade": 28
+      },
+      {
+        "esperado": "CWE-330",
+        "predito": "CWE-501",
+        "quantidade": 13
+      },
+      {
+        "esperado": "CWE-501",
+        "predito": "CWE-614",
+        "quantidade": 1
+      }
+    ],
+    "todas_confusoes": {
+      "CWE-330": {
+        "CWE-614": 28,
+        "CWE-501": 13
+      },
+      "CWE-501": {
+        "CWE-614": 1
+      }
+    }
+  },
+  "analise_stride": {
+    "total_analisado": 466,
+    "stride_correto": 340,
+    "stride_parcial": 0,
+    "stride_incorreto": 126,
+    "taxa_correto": 72.96,
+    "taxa_parcial": 0.0,
+    "taxa_incorreto": 27.04,
+    "detalhes": [
+      {
+        "cwe": "CWE-328",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Information Disclosure",
+          "Spoofing"
+        ],
+        "concordancia": "incorreto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-79",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Elevation of Privilege",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-330",
+        "stride_predito": "Spoofing",
+        "strides_esperados": [
+          "Spoofing",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-79",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Elevation of Privilege",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-327",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Information Disclosure",
+          "Spoofing"
+        ],
+        "concordancia": "incorreto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-328",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Information Disclosure",
+          "Spoofing"
+        ],
+        "concordancia": "incorreto"
+      },
+      {
+        "cwe": "CWE-330",
+        "stride_predito": "Spoofing",
+        "strides_esperados": [
+          "Spoofing",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-79",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Elevation of Privilege",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-78",
+        "stride_predito": "Elevation of Privilege",
+        "strides_esperados": [
+          "Elevation of Privilege",
+          "Tampering"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-78",
+        "stride_predito": "Elevation of Privilege",
+        "strides_esperados": [
+          "Elevation of Privilege",
+          "Tampering"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-327",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Information Disclosure",
+          "Spoofing"
+        ],
+        "concordancia": "incorreto"
+      },
+      {
+        "cwe": "CWE-22",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-90",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Information Disclosure",
+          "Elevation of Privilege"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Information Disclosure",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      },
+      {
+        "cwe": "CWE-89",
+        "stride_predito": "Tampering",
+        "strides_esperados": [
+          "Tampering",
+          "Information Disclosure"
+        ],
+        "concordancia": "correto"
+      }
+    ]
+  },
+  "distribuicao_classes": {
+    "distribuicao_real": {
+      "CWE-328": 44,
+      "CWE-89": 109,
+      "CWE-79": 58,
+      "CWE-330": 84,
+      "CWE-327": 41,
+      "CWE-78": 40,
+      "CWE-22": 38,
+      "CWE-90": 12,
+      "CWE-501": 26,
+      "CWE-614": 10,
+      "CWE-643": 4
+    },
+    "distribuicao_predita": {
+      "CWE-328": 44,
+      "CWE-89": 109,
+      "CWE-79": 58,
+      "CWE-614": 39,
+      "CWE-327": 41,
+      "CWE-330": 43,
+      "CWE-78": 40,
+      "CWE-22": 38,
+      "CWE-90": 12,
+      "CWE-501": 38,
+      "CWE-643": 4
+    },
+    "comparacao_por_classe": {
+      "CWE-22": {
+        "real": 38,
+        "predito": 38,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-327": {
+        "real": 41,
+        "predito": 41,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-328": {
+        "real": 44,
+        "predito": 44,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-330": {
+        "real": 84,
+        "predito": 43,
+        "diferenca": -41,
+        "taxa_predicao": 0.51
+      },
+      "CWE-501": {
+        "real": 26,
+        "predito": 38,
+        "diferenca": 12,
+        "taxa_predicao": 1.46
+      },
+      "CWE-614": {
+        "real": 10,
+        "predito": 39,
+        "diferenca": 29,
+        "taxa_predicao": 3.9
+      },
+      "CWE-643": {
+        "real": 4,
+        "predito": 4,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-78": {
+        "real": 40,
+        "predito": 40,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-79": {
+        "real": 58,
+        "predito": 58,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-89": {
+        "real": 109,
+        "predito": 109,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      },
+      "CWE-90": {
+        "real": 12,
+        "predito": 12,
+        "diferenca": 0,
+        "taxa_predicao": 1.0
+      }
+    }
+  }
+}
